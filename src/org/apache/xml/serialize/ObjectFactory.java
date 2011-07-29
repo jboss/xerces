@@ -125,130 +125,11 @@ final class ObjectFactory {
                                       String fallbackClassName)
         throws ConfigurationError
     {
-        if (DEBUG) debugPrintln("debug is on");
-
-        ClassLoader cl = findClassLoader();
-
-        // Use the system property first
         try {
-            String systemProp = SecuritySupport.getSystemProperty(factoryId);
-            if (systemProp != null) {
-                if (DEBUG) debugPrintln("found system property, value=" + systemProp);
-                return newInstance(systemProp, cl, true);
-            }
-        } catch (SecurityException se) {
-            // Ignore and continue w/ next location
+            return Class.forName(fallbackClassName).newInstance();
+        } catch (Exception e) {
+            throw new ConfigurationError(e.getMessage(), e);
         }
-
-        // Try to read from propertiesFilename, or $java.home/lib/xerces.properties
-        String factoryClassName = null;
-        // no properties file name specified; use $JAVA_HOME/lib/xerces.properties:
-        if (propertiesFilename == null) {
-            File propertiesFile = null;
-            boolean propertiesFileExists = false;
-            try {
-                String javah = SecuritySupport.getSystemProperty("java.home");
-                propertiesFilename = javah + File.separator +
-                    "lib" + File.separator + DEFAULT_PROPERTIES_FILENAME;
-                propertiesFile = new File(propertiesFilename);
-                propertiesFileExists = SecuritySupport.getFileExists(propertiesFile);
-            } catch (SecurityException e) {
-                // try again...
-                fLastModified = -1;
-                fXercesProperties = null;
-            }
-            
-            synchronized (ObjectFactory.class) {
-                boolean loadProperties = false;
-                FileInputStream fis = null;
-                try {
-                    // file existed last time
-                    if(fLastModified >= 0) {
-                        if(propertiesFileExists &&
-                                (fLastModified < (fLastModified = SecuritySupport.getLastModified(propertiesFile)))) {
-                            loadProperties = true;
-                        } else {
-                            // file has stopped existing...
-                            if(!propertiesFileExists) {
-                                fLastModified = -1;
-                                fXercesProperties = null;
-                            } // else, file wasn't modified!
-                        }
-                    } else {
-                        // file has started to exist:
-                        if(propertiesFileExists) {
-                            loadProperties = true;
-                            fLastModified = SecuritySupport.getLastModified(propertiesFile);
-                        } // else, nothing's changed
-                    }
-                    if(loadProperties) {
-                        // must never have attempted to read xerces.properties before (or it's outdeated)
-                        fXercesProperties = new Properties();
-                        fis = SecuritySupport.getFileInputStream(propertiesFile);
-                        fXercesProperties.load(fis);
-                    }
-                } catch (Exception x) {
-                    fXercesProperties = null;
-                    fLastModified = -1;
-                    // assert(x instanceof FileNotFoundException
-                    //        || x instanceof SecurityException)
-                    // In both cases, ignore and continue w/ next location
-                }
-                finally {
-                    // try to close the input stream if one was opened.
-                    if (fis != null) {
-                        try {
-                            fis.close();
-                        }
-                        // Ignore the exception.
-                        catch (IOException exc) {}
-                    }
-                }
-            }
-            if(fXercesProperties != null) {
-                factoryClassName = fXercesProperties.getProperty(factoryId);
-            }
-        } else {
-            FileInputStream fis = null;
-            try {
-                fis = SecuritySupport.getFileInputStream(new File(propertiesFilename));
-                Properties props = new Properties();
-                props.load(fis);
-                factoryClassName = props.getProperty(factoryId);
-            } catch (Exception x) {
-                // assert(x instanceof FileNotFoundException
-                //        || x instanceof SecurityException)
-                // In both cases, ignore and continue w/ next location
-            }
-            finally {
-                // try to close the input stream if one was opened.
-                if (fis != null) {
-                    try {
-                        fis.close();
-                    }
-                    // Ignore the exception.
-                    catch (IOException exc) {}
-                }
-            }
-        }
-        if (factoryClassName != null) {
-            if (DEBUG) debugPrintln("found in " + propertiesFilename + ", value=" + factoryClassName);
-            return newInstance(factoryClassName, cl, true);
-        }
-
-        // Try Jar Service Provider Mechanism
-        Object provider = findJarServiceProvider(factoryId);
-        if (provider != null) {
-            return provider;
-        }
-
-        if (fallbackClassName == null) {
-            throw new ConfigurationError(
-                "Provider for " + factoryId + " cannot be found", null);
-        }
-
-        if (DEBUG) debugPrintln("using fallback, value=" + fallbackClassName);
-        return newInstance(fallbackClassName, cl, true);
     } // createObject(String,String,String):Object
 
     //
@@ -269,55 +150,7 @@ final class ObjectFactory {
     static ClassLoader findClassLoader()
         throws ConfigurationError
     {
-        // Figure out which ClassLoader to use for loading the provider
-        // class.  If there is a Context ClassLoader then use it.
-        ClassLoader context = SecuritySupport.getContextClassLoader();
-        ClassLoader system = SecuritySupport.getSystemClassLoader();
-
-        ClassLoader chain = system;
-        while (true) {
-            if (context == chain) {
-                // Assert: we are on JDK 1.1 or we have no Context ClassLoader
-                // or any Context ClassLoader in chain of system classloader
-                // (including extension ClassLoader) so extend to widest
-                // ClassLoader (always look in system ClassLoader if Xerces
-                // is in boot/extension/system classpath and in current
-                // ClassLoader otherwise); normal classloaders delegate
-                // back to system ClassLoader first so this widening doesn't
-                // change the fact that context ClassLoader will be consulted
-                ClassLoader current = ObjectFactory.class.getClassLoader();
-
-                chain = system;
-                while (true) {
-                    if (current == chain) {
-                        // Assert: Current ClassLoader in chain of
-                        // boot/extension/system ClassLoaders
-                        return system;
-                    }
-                    if (chain == null) {
-                        break;
-                    }
-                    chain = SecuritySupport.getParentClassLoader(chain);
-                }
-
-                // Assert: Current ClassLoader not in chain of
-                // boot/extension/system ClassLoaders
-                return current;
-            }
-
-            if (chain == null) {
-                // boot ClassLoader reached
-                break;
-            }
-
-            // Check for any extension ClassLoaders in chain up to
-            // boot ClassLoader
-            chain = SecuritySupport.getParentClassLoader(chain);
-        };
-
-        // Assert: Context ClassLoader not in chain of
-        // boot/extension/system ClassLoaders
-        return context;
+        return ObjectFactory.class.getClassLoader();
     } // findClassLoader():ClassLoader
 
     /**
@@ -351,49 +184,7 @@ final class ObjectFactory {
                                       boolean doFallback)
         throws ClassNotFoundException, ConfigurationError
     {
-        //throw security exception if the calling thread is not allowed to access the package
-        //restrict the access to package as speicified in java.security policy
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            final int lastDot = className.lastIndexOf(".");
-            String packageName = className;
-            if (lastDot != -1) packageName = className.substring(0, lastDot);
-            security.checkPackageAccess(packageName);
-        }
-        Class providerClass;
-        if (cl == null) {
-            // XXX Use the bootstrap ClassLoader.  There is no way to
-            // load a class using the bootstrap ClassLoader that works
-            // in both JDK 1.1 and Java 2.  However, this should still
-            // work b/c the following should be true:
-            //
-            // (cl == null) iff current ClassLoader == null
-            //
-            // Thus Class.forName(String) will use the current
-            // ClassLoader which will be the bootstrap ClassLoader.
-            providerClass = Class.forName(className);
-        } else {
-            try {
-                providerClass = cl.loadClass(className);
-            } catch (ClassNotFoundException x) {
-                if (doFallback) {
-                    // Fall back to current classloader
-                    ClassLoader current = ObjectFactory.class.getClassLoader();
-                    if (current == null) {
-                        providerClass = Class.forName(className);
-                    } else if (cl != current) {
-                        cl = current;
-                        providerClass = cl.loadClass(className);
-                    } else {
-                        throw x;
-                    }
-                } else {
-                    throw x;
-                }
-            }
-        }
-
-        return providerClass;
+        return Class.forName(className);
     }
 
     /*
