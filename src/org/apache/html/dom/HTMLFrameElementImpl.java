@@ -16,6 +16,8 @@
  */
 package org.apache.html.dom;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.html.HTMLFrameElement;
 
 /**
@@ -31,6 +33,10 @@ public class HTMLFrameElementImpl
 {
 
     private static final long serialVersionUID = 635237057173695984L; 
+
+    public Document getContentDocument() {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
 
     public String getFrameBorder()
     {
