@@ -69,7 +69,8 @@ public class XJavac extends Javac {
                      (vendor.indexOf("HEWLETT-PACKARD") >= 0) ||
                      (vendor.indexOf("KAFFE") >= 0) ||
                      (vendor.indexOf("SABLE") >= 0) ||
-                     (vendor.indexOf("FREEBSD") >= 0)) {
+                     (vendor.indexOf("FREEBSD") >= 0) ||
+                     (vendor.indexOf("FREE SOFTWARE FOUNDATION") >= 0)) {
                 // we're on an SUN 1.4 or higher; fiddle with the bootclasspath.
                 // since we can't eviscerate XML-related info here,
                 // we must use the classpath
