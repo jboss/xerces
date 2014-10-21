@@ -68,8 +68,8 @@
   <modules/>
 
   <scm>
-    <connection>scm:svn:https://github.com/jboss/xerces</connection>
-    <developerConnection>scm:svn:git@github.com:jboss/xerces.git</developerConnection>
+    <connection>scm:git:https://github.com/jboss/xerces</connection>
+    <developerConnection>scm:git:git@github.com:jboss/xerces.git</developerConnection>
     <url>https://github.com/jboss/xerces</url>
   </scm>
   <issueManagement/>
