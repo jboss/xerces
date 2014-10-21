@@ -5,12 +5,12 @@
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
     <version>13</version>
-    <relativePath/>
+    <relativePath />
   </parent>
 
   <groupId>xerces</groupId>
   <artifactId>xercesImpl</artifactId>
-  <version>2.11.0.SP1-SNAPSHOT</version>
+  <version>2.11.0.SP2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>Xerces-J</name>
@@ -59,21 +59,22 @@
     </developer>
   </developers>
 
-  <contributors/>
+  <contributors />
 
-  <mailingLists/>
+  <mailingLists />
 
-  <prerequisites/>
+  <prerequisites />
 
-  <modules/>
+  <modules />
 
   <scm>
     <connection>scm:git:https://github.com/jboss/xerces</connection>
     <developerConnection>scm:git:git@github.com:jboss/xerces.git</developerConnection>
     <url>https://github.com/jboss/xerces</url>
+    <tag>HEAD</tag>
   </scm>
-  <issueManagement/>
-  <ciManagement/>
+  <issueManagement />
+  <ciManagement />
   <distributionManagement>
     <repository>
       <id>jboss-releases-repository</id>
@@ -87,7 +88,7 @@
     </snapshotRepository>
   </distributionManagement>
 
-  <properties/>
+  <properties />
 
   <dependencyManagement>
     <dependencies>
@@ -111,8 +112,8 @@
     </dependency>
   </dependencies>
 
-  <repositories/>
-  <pluginRepositories/>
+  <repositories />
+  <pluginRepositories />
 
   <build>
     <sourceDirectory>${project.basedir}/src</sourceDirectory>
@@ -171,6 +172,12 @@
     </resources>
     <pluginManagement>
       <plugins>
+        <!-- MRELEASE-875 -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.5</version>
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
@@ -231,7 +238,7 @@
     </plugins>
   </build>
 
-  <reporting/>
+  <reporting />
 
-  <profiles/>
+  <profiles />
 </project>
