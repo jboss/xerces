@@ -16,6 +16,8 @@
  */
 package org.apache.html.dom;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.html.HTMLIFrameElement;
 
 /**
@@ -31,6 +33,10 @@ public class HTMLIFrameElementImpl
 {
 
     private static final long serialVersionUID = 2393622754706230429L;
+
+    public Document getContentDocument() {
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "Method not supported");
+    }
 
     public String getAlign()
     {
