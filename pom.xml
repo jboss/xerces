@@ -186,6 +186,36 @@
       </plugins>
     </pluginManagement>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
+        <executions>
+          <execution>
+            <id>unzip-xml-commons-external-src</id>
+            <phase>validate</phase>
+            <configuration>
+              <target>
+                <unzip src="${project.basedir}/tools/xml-commons-external-src.zip" dest="${project.basedir}/build/src"/>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${project.basedir}/build</directory>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
       <!-- disable signing as we don't do this on jboss artifacts -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
