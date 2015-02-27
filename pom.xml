@@ -101,11 +101,6 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>xml-apis</groupId>
-      <artifactId>xml-apis</artifactId>
-      <version>1.4.01</version>
-    </dependency>
-    <dependency>
       <groupId>xml-resolver</groupId>
       <artifactId>xml-resolver</artifactId>
       <optional>true</optional>
@@ -224,6 +219,24 @@
               </resources>
             </configuration>
           </execution>
+          <execution>
+            <id>copy-extra-sources</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/generated-sources/extra</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}/build/src</directory>
+                  <includes>
+                    <include>org/w3c/dom/ElementTraversal.java</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -234,6 +247,25 @@
             <manifestFile>${project.build.directory}/manifest/manifest.xerces</manifestFile>
           </archive>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/extra</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
