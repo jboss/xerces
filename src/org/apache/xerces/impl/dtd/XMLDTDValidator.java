@@ -143,6 +143,10 @@ public class XMLDTDValidator
     protected static final String VALIDATION_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.VALIDATION_MANAGER_PROPERTY;
 
+    /** Property identifier: entity manager. */
+    protected static final String ENTITY_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
+
     // recognized features and properties
 
     /** Recognized features. */
@@ -193,6 +197,9 @@ public class XMLDTDValidator
 
     // updated during reset
     protected ValidationManager fValidationManager = null;
+
+    /** Entity manager. */
+    protected XMLEntityManager fEntityManager;
     
     // validation state
     protected final ValidationState fValidationState = new ValidationState();
@@ -503,6 +510,8 @@ public class XMLDTDValidator
         fValidationManager= (ValidationManager)componentManager.getProperty(VALIDATION_MANAGER);
         fValidationManager.addValidationState(fValidationState);      
         fValidationState.setUsingNamespaces(fNamespaces);
+
+        fEntityManager = (XMLEntityManager)componentManager.getProperty(ENTITY_MANAGER);
         
         // get needed components
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(Constants.XERCES_PROPERTY_PREFIX+Constants.ERROR_REPORTER_PROPERTY);
@@ -761,6 +770,8 @@ public class XMLDTDValidator
             // we've found a cached one;so let's make sure not to read
             // any external subset!
             fValidationManager.setCachedDTD(true);
+
+            fEntityManager.initFromDTD(fDTDGrammar);
         }
         fGrammarBucket.setActiveGrammar(fDTDGrammar);
 
