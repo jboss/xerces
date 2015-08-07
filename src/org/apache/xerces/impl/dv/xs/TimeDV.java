@@ -78,7 +78,6 @@ public class TimeDV extends AbstractDateTimeDV {
         
         if ( date.utc!=0 && date.utc != 'Z') {
             normalize(date);
-            date.day = 15;
         }
         date.position = 2;
         return date;
