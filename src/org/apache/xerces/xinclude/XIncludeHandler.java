@@ -53,6 +53,7 @@ import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
 import org.apache.xerces.xni.parser.XMLConfigurationException;
@@ -208,6 +209,10 @@ public class XIncludeHandler
     protected static final String JAXP_SCHEMA_LANGUAGE =
         Constants.JAXP_PROPERTY_PREFIX + Constants.SCHEMA_LANGUAGE;
     
+    /** Property identifier: grammar pool. */
+    protected static final String GRAMMAR_POOL = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
+
     /** Property identifier: symbol table. */
     protected static final String SYMBOL_TABLE = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.SYMBOL_TABLE_PROPERTY;
@@ -282,6 +287,7 @@ public class XIncludeHandler
     protected XMLLocatorWrapper fXIncludeLocator = new XMLLocatorWrapper();
     protected XIncludeMessageFormatter fXIncludeMessageFormatter = new XIncludeMessageFormatter();
     protected XIncludeNamespaceSupport fNamespaceContext;
+    protected XMLGrammarPool fGrammarPool;
     protected SymbolTable fSymbolTable;
     protected XMLErrorReporter fErrorReporter;
     protected XMLEntityResolver fEntityResolver;
@@ -467,6 +473,21 @@ public class XIncludeHandler
             fFixupLanguage = true;
         }
         
+        // Get grammar pool.
+        try {
+            XMLGrammarPool value =
+                (XMLGrammarPool)componentManager.getProperty(GRAMMAR_POOL);
+            if (value != null) {
+                fGrammarPool = value;
+                if (fChildConfig != null) {
+                    fChildConfig.setProperty(GRAMMAR_POOL, value);
+                }
+            }
+        }
+        catch (XMLConfigurationException e) {
+            fGrammarPool = null;
+        }
+        
         // Get symbol table.
         try {
             SymbolTable value =
@@ -650,6 +671,13 @@ public class XIncludeHandler
      */
     public void setProperty(String propertyId, Object value)
         throws XMLConfigurationException {
+        if (propertyId.equals(GRAMMAR_POOL)) {
+            fGrammarPool = (XMLGrammarPool)value;
+            if (fChildConfig != null) {
+                fChildConfig.setProperty(propertyId, value);
+            }
+            return;
+        }
         if (propertyId.equals(SYMBOL_TABLE)) {
             fSymbolTable = (SymbolTable)value;
             if (fChildConfig != null) {
@@ -1598,6 +1626,7 @@ public class XIncludeHandler
                         true);
 
                 // use the same symbol table, error reporter, entity resolver, security manager and buffer size.
+                if (fGrammarPool != null) fChildConfig.setProperty(GRAMMAR_POOL, fGrammarPool);
                 if (fSymbolTable != null) fChildConfig.setProperty(SYMBOL_TABLE, fSymbolTable);
                 if (fErrorReporter != null) fChildConfig.setProperty(ERROR_REPORTER, fErrorReporter);
                 if (fEntityResolver != null) fChildConfig.setProperty(ENTITY_RESOLVER, fEntityResolver);
