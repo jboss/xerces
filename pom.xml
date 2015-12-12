@@ -10,7 +10,7 @@
 
   <groupId>xerces</groupId>
   <artifactId>xercesImpl</artifactId>
-  <version>2.11.0.SP2-SNAPSHOT</version>
+  <version>2.11.0.SP5-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>Xerces-J</name>
@@ -100,11 +100,6 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
-    <dependency>
-      <groupId>xml-apis</groupId>
-      <artifactId>xml-apis</artifactId>
-      <version>1.4.01</version>
-    </dependency>
     <dependency>
       <groupId>xml-resolver</groupId>
       <artifactId>xml-resolver</artifactId>
@@ -203,6 +198,46 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
+        <executions>
+          <execution>
+            <id>unzip-xml-commons-external-src</id>
+            <phase>validate</phase>
+            <configuration>
+              <target>
+                <unzip src="${project.basedir}/tools/xml-commons-external-src.zip" dest="${project.basedir}/build/src" />
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${project.basedir}/build</directory>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+      <!-- disable signing as we don't do this on jboss artifacts -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
         <executions>
           <execution>
@@ -224,6 +259,24 @@
               </resources>
             </configuration>
           </execution>
+          <execution>
+            <id>copy-extra-sources</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/generated-sources/extra</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}/build/src</directory>
+                  <includes>
+                    <include>org/w3c/dom/ElementTraversal.java</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -234,6 +287,25 @@
             <manifestFile>${project.build.directory}/manifest/manifest.xerces</manifestFile>
           </archive>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/extra</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
