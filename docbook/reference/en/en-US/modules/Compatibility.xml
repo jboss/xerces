@@ -1,0 +1,61 @@
+<section id="Compatibility">
+<title>Compatibility with Wildfly</title>
+
+As noted in the <link linkend="Introduction">Introduction</link>, the increased
+security imposed by the SECURE_PROCESSING_FEATURE might require additional
+configuration. We examine two different versions of Wildfly to determine if
+changes are necessary.
+
+<section id="wf8.2.1.Final">
+<title>Wildfly 8.2.1.Final</title>
+<para>
+  In Wildfly 8.2.1.Final, the following changes are necessary for the basic integration
+  testsuite to pass.
+</para>
+
+<itemizedlist>
+  <listitem>
+    <emphasis role="bold">hibernate-core</emphasis>: 
+    <para><classname>org.hibernate.cfg.Configuration</classname> needs additional configuration of a
+    <classname>SAXReader</classname>.</para>
+  </listitem>
+  <listitem>
+    <emphasis role="bold">jsf-impl</emphasis>:
+    <para><classname>com.sun.faces.facelets.compiler.SAXCompiler</classname> needs additional configuration
+    of a <classname>SAXParserFactory</classname>.</para>
+  </listitem>
+  <listitem>
+    <emphasis role="bold">picketbox</emphasis>: 
+    <para><classname>org.jboss.security.util.xml.DOMUtils</classname> needs additional configuration
+    of a <classname>DocumentBuilderFactory</classname>.</para>
+  </listitem>
+  <listitem>
+    <emphasis role="bold">wildfly-core-impl</emphasis>:
+    <para><classname>org.jboss.weld.xml.BeansXmlParser</classname> needs additional configuration of a
+    <classname>SAXParserFactory</classname>.</para>
+  </listitem>
+</itemizedlist>
+
+<para>
+  The particular changes vary from case to case, but they generally involve
+</para>
+
+<itemizedlist>
+  <listitem>http://apache.org/xml/features/disallow-doctype-decl</listitem>
+  <listitem>http://apache.org/xml/features/nonvalidating/load-external-dtd</listitem>
+  <listitem>http://javax.xml.XMLConstants/property/accessExternalDTD</listitem>
+  <listitem>http://javax.xml.XMLConstants/property/accessExternalSchema</listitem>
+</itemizedlist>
+
+</section>
+
+<section id="wf-10.0.0.CR4">
+<title>Wildfly 10.0.0.CR4</title>
+
+<para>
+The entire testsuite of Wildfly 10.0.0.CR4 runs without any changes.
+</para>
+
+</section>
+
+</section>

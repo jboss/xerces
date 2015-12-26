@@ -161,6 +161,10 @@ public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
         boolean empty = false;
         fAttributes.removeAllAttributes();
         do {
+            if (fSecurityManager != null && fAttributes.getLength() > fSecurityManager.getElementAttributeLimit())
+            {
+                reportFatalError("ElementAttributeLimit", new Object[]{fCurrentElement, Integer.toString(fSecurityManager.getElementAttributeLimit())});
+            }
             // spaces
             boolean sawSpace = fEntityScanner.skipSpaces();
 

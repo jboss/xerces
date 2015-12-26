@@ -42,7 +42,7 @@ public class Xerces
     //
 
     /** Parser. */
-    protected DOMParser parser = new DOMParser();
+    protected DOMParser parser;
 
     //
     // Constructors
@@ -50,9 +50,15 @@ public class Xerces
 
     /** Default constructor. */
     public Xerces() {
+        parser = new DOMParser(false);
         parser.setErrorHandler(this);
     } // <init>()
 
+    public Xerces(boolean secureProcessing) {
+        parser = new DOMParser(secureProcessing);
+        parser.setErrorHandler(this);
+    } // <init>()
+    
     //
     // ParserWrapper methods
     //

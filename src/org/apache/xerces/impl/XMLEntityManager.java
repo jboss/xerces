@@ -159,6 +159,14 @@ public class XMLEntityManager
     protected static final String SECURITY_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
 
+    /** property identifier: entity expansion limit. */
+    protected static final String ENTITY_EXPANSION_LIMIT = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_EXPANSION_LIMIT_PROPERTY;
+    
+    /** property identifier: entity expansion limit alternate. */
+    protected static final String ENTITY_EXPANSION_LIMIT2 = 
+        Constants.JAXP_ORACLE_PROPERTY_PREFIX + Constants.ENTITY_EXPANSION_LIMIT_PROPERTY2;
+    
     // recognized features and properties
 
     /** Recognized features. */
@@ -189,6 +197,8 @@ public class XMLEntityManager
         VALIDATION_MANAGER,
         BUFFER_SIZE,
         SECURITY_MANAGER,
+        ENTITY_EXPANSION_LIMIT,
+        ENTITY_EXPANSION_LIMIT2
     };
 
     /** Property defaults. */
@@ -199,6 +209,8 @@ public class XMLEntityManager
         null,
         new Integer(DEFAULT_BUFFER_SIZE),
         null,
+        new Integer(-1),
+        new Integer(-1)
     };
 
     private static final String XMLEntity = "[xml]".intern();
@@ -1499,6 +1511,20 @@ public class XMLEntityManager
                 propertyId.endsWith(Constants.SECURITY_MANAGER_PROPERTY)) {
                 fSecurityManager = (SecurityManager)value; 
                 fEntityExpansionLimit = (fSecurityManager != null)?fSecurityManager.getEntityExpansionLimit():0;
+            }
+            // Property value overrides SecurityManager value.
+            if (suffixLength == Constants.ENTITY_EXPANSION_LIMIT_PROPERTY.length() &&
+                    propertyId.endsWith(Constants.ENTITY_EXPANSION_LIMIT_PROPERTY)
+             || suffixLength == Constants.ENTITY_EXPANSION_LIMIT_PROPERTY2.length() &&
+                    propertyId.endsWith(Constants.ENTITY_EXPANSION_LIMIT_PROPERTY2)) {
+                if (value instanceof Integer)
+                {
+                    fEntityExpansionLimit = (Integer) value;
+                }
+                else
+                {
+                    fEntityExpansionLimit = Integer.parseInt((String) value);
+                }
             }
         }
 

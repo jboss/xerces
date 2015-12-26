@@ -26,6 +26,7 @@ import org.apache.xerces.impl.io.MalformedByteSequenceException;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.util.NamespaceSupport;
+import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLStringBuffer;
 import org.apache.xerces.xni.Augmentations;
@@ -102,6 +103,10 @@ public class XMLDocumentScannerImpl
     /** Feature identifier: load external DTD. */
     protected static final String DISALLOW_DOCTYPE_DECL_FEATURE =
         Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
+    
+    /** Feature identifier: standard uri conformant */
+    protected static final String STANDARD_URI_CONFORMANT =
+            Constants.XERCES_FEATURE_PREFIX + Constants.STANDARD_URI_CONFORMANT_FEATURE;
 
     // property identifiers
 
@@ -116,8 +121,18 @@ public class XMLDocumentScannerImpl
     /** property identifier:  NamespaceContext */
     protected static final String NAMESPACE_CONTEXT =
         Constants.XERCES_PROPERTY_PREFIX + Constants.NAMESPACE_CONTEXT_PROPERTY;
-        
-
+    
+    /** Property identifier: security manager. */
+    private static final String SECURITY_MANAGER_PROPERTY =
+            Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
+    
+    /** Property identifier: access external DTD */
+    private static final String ACCESS_EXTERNAL_DTD_PROPERTY =
+            Constants.JAXP_JAVAX_PROPERTY_PREFIX + Constants.ACCESS_EXTERNAL_DTD;
+    
+    /** Property identifier: access external schema */
+    private static final String ACCESS_EXTERNAL_SCHEMA_PROPERTY =
+            Constants.JAXP_JAVAX_PROPERTY_PREFIX + Constants.ACCESS_EXTERNAL_SCHEMA;
 
     // recognized features and properties
 
@@ -125,12 +140,14 @@ public class XMLDocumentScannerImpl
     private static final String[] RECOGNIZED_FEATURES = {
         LOAD_EXTERNAL_DTD,
         DISALLOW_DOCTYPE_DECL_FEATURE,
+        STANDARD_URI_CONFORMANT,
     };
 
     /** Feature defaults. */
     private static final Boolean[] FEATURE_DEFAULTS = {
         Boolean.TRUE,
         Boolean.FALSE,
+        Boolean.FALSE
     };
 
     /** Recognized properties. */
@@ -138,10 +155,14 @@ public class XMLDocumentScannerImpl
         DTD_SCANNER,
         VALIDATION_MANAGER,
         NAMESPACE_CONTEXT,
+        ACCESS_EXTERNAL_DTD_PROPERTY,
+        ACCESS_EXTERNAL_SCHEMA_PROPERTY,
     };
 
     /** Property defaults. */
     private static final Object[] PROPERTY_DEFAULTS = {
+        null,
+        null,
         null,
         null,
         null,
@@ -157,7 +178,10 @@ public class XMLDocumentScannerImpl
     protected XMLDTDScanner fDTDScanner;
     /** Validation manager . */
     protected ValidationManager fValidationManager;
-
+    
+    /** Allowed external DTD protocols */
+    protected String fAccessExternalDTD;
+    
     // protected data
 
     /** Scanning DTD. */
@@ -184,6 +208,12 @@ public class XMLDocumentScannerImpl
 
     /** Disallow doctype declaration. */
     protected boolean fDisallowDoctype = false;
+    
+    /**
+     * standard uri conformant (strict uri).
+     * http://apache.org/xml/features/standard-uri-conformant
+     */
+    protected boolean fStrictURI;
 
     // state
 
@@ -298,6 +328,13 @@ public class XMLDocumentScannerImpl
         catch (XMLConfigurationException e) {
             fDisallowDoctype = false;
         }
+        
+        try {
+            fStrictURI = componentManager.getFeature(STANDARD_URI_CONFORMANT);
+        }
+        catch (XMLConfigurationException e) {
+            fStrictURI = false;
+        }
 
         // xerces properties
         fDTDScanner = (XMLDTDScanner)componentManager.getProperty(DTD_SCANNER);
@@ -316,6 +353,16 @@ public class XMLDocumentScannerImpl
             fNamespaceContext = new NamespaceSupport();
         }
         fNamespaceContext.reset();
+        
+        SecurityManager securityManager = (SecurityManager)componentManager.getProperty(SECURITY_MANAGER_PROPERTY);
+        if (securityManager != null)
+        {
+            fAccessExternalDTD = securityManager.getAccessExternalDTD();
+        }
+        if (fAccessExternalDTD == null)
+        {
+            fAccessExternalDTD = "all";
+        }
         
         // setup dispatcher
         setScannerState(SCANNER_STATE_XML_DECL);
@@ -603,6 +650,19 @@ public class XMLDocumentScannerImpl
 
     } // scanDoctypeDecl():boolean
 
+    /**
+     * Check the protocol used in the systemId against allowed protocols
+     *
+     * @param systemId the Id of the URI
+     * @param allowedProtocols a list of allowed protocols separated by comma
+     * @return the name of the protocol if rejected, null otherwise
+     */
+    protected String checkAccess(String systemId, String allowedProtocols) throws IOException {
+        String baseSystemId = fEntityScanner.getBaseSystemId();
+        String expandedSystemId = fEntityManager.expandSystemId(systemId, baseSystemId, fStrictURI);
+        return SecurityManager.checkAccess(expandedSystemId, allowedProtocols, "all");
+    }
+    
     //
     // Private methods
     //
@@ -662,6 +722,11 @@ public class XMLDocumentScannerImpl
             try {
                 if (fEntityScanner.skipString("<?xml")) {
                     fMarkupDepth++;
+                    if (fSecurityManager != null && fMarkupDepth > fSecurityManager.getMaxElementDepth())
+                    {
+                        String name = fCurrentElement.rawname != null ? fCurrentElement.rawname : "";
+                        reportFatalError("MaxElementDepthExceeded", new Object[]{name, fMarkupDepth, fSecurityManager.getMaxElementDepth()});      
+                    }
                     // NOTE: special case where document starts with a PI
                     //       whose name starts with "xml" (e.g. "xmlfoo")
                     if (XMLChar.isName(fEntityScanner.peekChar())) {
@@ -767,6 +832,11 @@ public class XMLDocumentScannerImpl
                         }
                         case SCANNER_STATE_START_OF_MARKUP: {
                             fMarkupDepth++;
+                            if (fSecurityManager != null && fMarkupDepth > fSecurityManager.getMaxElementDepth())
+                            {
+                                String name = fCurrentElement.rawname != null ? fCurrentElement.rawname : "";
+                                reportFatalError("MaxElementDepthExceeded", new Object[]{name, fMarkupDepth, fSecurityManager.getMaxElementDepth()});
+                            }
                             if (fEntityScanner.skipChar('!')) {
                                 if (fEntityScanner.skipChar('-')) {
                                     if (!fEntityScanner.skipChar('-')) {
@@ -836,6 +906,7 @@ public class XMLDocumentScannerImpl
                             if (fDoctypeSystemId != null) {
                                 fIsEntityDeclaredVC = !fStandalone;
                                 if (((fValidation || fLoadExternalDTD) 
+                                    && checkAccess(fDoctypeSystemId, fAccessExternalDTD) == null
                                     && (fValidationManager == null || !fValidationManager.isCachedDTD()))) {
                                     setScannerState(SCANNER_STATE_DTD_EXTERNAL);
                                     setDispatcher(fDTDDispatcher);
@@ -845,6 +916,7 @@ public class XMLDocumentScannerImpl
                             else if (fExternalSubsetSource != null) {
                                 fIsEntityDeclaredVC = !fStandalone;
                                 if (((fValidation || fLoadExternalDTD) 
+                                    && checkAccess(fDoctypeSystemId, fAccessExternalDTD) == null
                                     && (fValidationManager == null || !fValidationManager.isCachedDTD()))) {
                                     // This handles the case of a DOCTYPE that had neither an internal subset or an external subset.
                                     fDTDScanner.setInputSource(fExternalSubsetSource);
@@ -947,7 +1019,9 @@ public class XMLDocumentScannerImpl
                             // REVISIT: Should there be a feature for
                             //          the "complete" parameter?
                             boolean completeDTD = true;
-                            boolean readExternalSubset = (fValidation || fLoadExternalDTD) && (fValidationManager == null || !fValidationManager.isCachedDTD());
+                            boolean readExternalSubset = (fValidation || fLoadExternalDTD) 
+                                    && checkAccess(fDoctypeSystemId, fAccessExternalDTD) == null
+                                    && (fValidationManager == null || !fValidationManager.isCachedDTD());
                             boolean moreToScan = fDTDScanner.scanDTDInternalSubset(completeDTD, fStandalone, fHasExternalDTD && readExternalSubset);
                             if (!moreToScan) {
                                 // end doctype declaration
@@ -1249,6 +1323,11 @@ public class XMLDocumentScannerImpl
                         }
                         case SCANNER_STATE_START_OF_MARKUP: {
                             fMarkupDepth++;
+                            if (fSecurityManager != null && fMarkupDepth > fSecurityManager.getMaxElementDepth())
+                            {
+                                String name = fCurrentElement.rawname != null ? fCurrentElement.rawname : "";
+                                reportFatalError("MaxElementDepthExceeded", new Object[]{name, fMarkupDepth, fSecurityManager.getMaxElementDepth()});   
+                            }
                             if (fEntityScanner.skipChar('?')) {
                                 setScannerState(SCANNER_STATE_PI);
                                 again = true;

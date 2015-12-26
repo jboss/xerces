@@ -48,6 +48,7 @@ import org.apache.xerces.util.DOMErrorHandlerWrapper;
 import org.apache.xerces.util.DefaultErrorHandler;
 import org.apache.xerces.util.MessageFormatter;
 import org.apache.xerces.util.ParserConfigurationSettings;
+import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLSymbols;
 import org.apache.xerces.util.URI.MalformedURIException;
@@ -150,6 +151,10 @@ XSLoader, DOMConfiguration {
     protected static final String SCHEMA_DV_FACTORY = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_DV_FACTORY_PROPERTY;
     
+    /** Property identifier: access external schema */
+    private static final String ACCESS_EXTERNAL_SCHEMA_PROPERTY =
+            Constants.JAXP_JAVAX_PROPERTY_PREFIX + Constants.ACCESS_EXTERNAL_SCHEMA;
+    
     // recognized features:
     private static final String[] RECOGNIZED_FEATURES = {
         SCHEMA_FULL_CHECKING,
@@ -207,7 +212,10 @@ XSLoader, DOMConfiguration {
         Constants.XERCES_PROPERTY_PREFIX + Constants.LOCALE_PROPERTY;
     
     protected static final String ENTITY_MANAGER =
-        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;   
+        Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
+    
+    private static final String MAX_OCCUR_LIMIT = 
+        Constants.JAXP_ORACLE_PROPERTY_PREFIX + Constants.MAX_OCCUR_LIMIT;
     
     // recognized properties
     private static final String [] RECOGNIZED_PROPERTIES = {
@@ -222,7 +230,8 @@ XSLoader, DOMConfiguration {
         JAXP_SCHEMA_SOURCE,
         SECURITY_MANAGER,
         LOCALE,
-        SCHEMA_DV_FACTORY
+        SCHEMA_DV_FACTORY,
+        MAX_OCCUR_LIMIT
     };
     
     // Data
@@ -243,6 +252,8 @@ XSLoader, DOMConfiguration {
     private boolean fJAXPProcessed = false;
     // if features/properties has not been changed, the value of this attribute is "false"
     private boolean fSettingsChanged = true;
+    // permissible protocols for accessing external schemas
+    private String fAccessExternalSchema;
     
     // xml schema parsing
     private XSDHandler fSchemaHandler;
@@ -543,7 +554,7 @@ XSLoader, DOMConfiguration {
         // We don't call tokenizeSchemaLocationStr here, because we also want
         // to check whether the values are valid URI.
         processExternalHints(fExternalSchemas, fExternalNoNSSchema,
-                locationPairs, fErrorReporter);
+                locationPairs, fAccessExternalSchema, fErrorReporter);
         SchemaGrammar grammar = loadSchema(desc, source, locationPairs);
         
         if(grammar != null && fGrammarPool != null) {
@@ -577,6 +588,16 @@ XSLoader, DOMConfiguration {
         if(!fJAXPProcessed) {
             processJAXPSchemaSource(locationPairs);
         }
+        
+        if (desc.isExternal()) {
+            String accessError = SecurityManager.checkAccess(desc.getExpandedSystemId(), fAccessExternalSchema, "all");
+            if (accessError != null) {
+                throw new XNIException(fErrorReporter.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
+                        "schema_reference.access",
+                        new Object[] { SecuritySupport.sanitizePath(desc.getExpandedSystemId()), accessError }, XMLErrorReporter.SEVERITY_ERROR));
+            }
+        }
+        
         SchemaGrammar grammar = fSchemaHandler.parseSchema(source, desc, locationPairs);
         
         return grammar;
@@ -627,7 +648,7 @@ XSLoader, DOMConfiguration {
     // add external schema locations to the location pairs
     public static void processExternalHints(String sl, String nsl,
             Hashtable locations,
-            XMLErrorReporter er) {
+            String accessExternalSchema, XMLErrorReporter er) {
         if (sl != null) {
             try {
                 // get the attribute decl for xsi:schemaLocation
@@ -636,7 +657,7 @@ XSLoader, DOMConfiguration {
                 XSAttributeDecl attrDecl = SchemaGrammar.SG_XSI.getGlobalAttributeDecl(SchemaSymbols.XSI_SCHEMALOCATION);
                 // validation the string value to get the list of URI's
                 attrDecl.fType.validate(sl, null, null);
-                if (!tokenizeSchemaLocationStr(sl, locations, null)) {
+                if (!tokenizeSchemaLocationStr(sl, locations, null, accessExternalSchema)) {
                     // report warning (odd number of items)
                     er.reportError(XSMessageFormatter.SCHEMA_DOMAIN,
                             "SchemaLocation",
@@ -679,7 +700,7 @@ XSLoader, DOMConfiguration {
     // @param schemaStr     The schemaLocation string to tokenize
     // @param locations     Hashtable mapping namespaces to LocationArray objects holding lists of locaitons
     // @return true if no problems; false if string could not be tokenized
-    public static boolean tokenizeSchemaLocationStr(String schemaStr, Hashtable locations, String base) {
+    public static boolean tokenizeSchemaLocationStr(String schemaStr, Hashtable locations, String base, String accessExternalSchema) {
         if (schemaStr!= null) {
             StringTokenizer t = new StringTokenizer(schemaStr, " \n\t\r");
             String namespace, location;
@@ -689,6 +710,19 @@ XSLoader, DOMConfiguration {
                     return false; // error!
                 }
                 location = t.nextToken();
+                try {
+                    String expandedLocation = XMLEntityManager.expandSystemId(location, "", true);
+                    String protocol = SecurityManager.checkAccess(expandedLocation, accessExternalSchema, "all");
+                    if (protocol != null)
+                    {
+                        continue;
+                    }
+                } catch (MalformedURIException e1) {
+                    continue;
+                } catch (IOException e) {
+                    continue;
+                }
+                
                 LocationArray la = ((LocationArray)locations.get(namespace));
                 if(la == null) {
                     la = new LocationArray();
@@ -1009,6 +1043,22 @@ XSLoader, DOMConfiguration {
             fExternalSchemas = null;
             fExternalNoNSSchema = null;
         }
+        
+        // get permissible protocols for external schemas
+        try {
+            fAccessExternalSchema = (String) componentManager.getProperty(ACCESS_EXTERNAL_SCHEMA_PROPERTY);
+        } catch (XMLConfigurationException e) {
+            //
+        }
+
+        SecurityManager securityManager = (SecurityManager) componentManager.getProperty(SECURITY_MANAGER);
+        if (securityManager != null) {
+            fAccessExternalSchema = securityManager.getAccessExternalSchema();
+        }
+        if (fAccessExternalSchema == null) {
+            fAccessExternalSchema = "all";
+        }
+        
         // get JAXP sources if available
         try {
             fJAXPSource = componentManager.getProperty(JAXP_SCHEMA_SOURCE);

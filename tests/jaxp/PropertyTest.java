@@ -26,6 +26,9 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * This sample program tests JAXP 1.2 properties
+ * 
+ * Note. Now that the SecureProcessingFeature is turned on by default, it is 
+ *       turned off in these tests, even though it is not a JAXP 1.2 feature. -Ron Sigal
  */
 public class PropertyTest extends DefaultHandler{
 
@@ -35,6 +38,7 @@ public class PropertyTest extends DefaultHandler{
 			SAXParserFactory spf = SAXParserFactory.newInstance();
 			spf.setValidating(true);
 			spf.setNamespaceAware(true);
+			spf.setFeature("http://javax.xml.XMLConstants/feature/secure-processing", false);
 			SAXParser parser = spf.newSAXParser();
 			parser.setProperty(
 				"http://java.sun.com/xml/jaxp/properties/schemaLanguage",
