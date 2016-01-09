@@ -179,6 +179,18 @@ public class XSDDescription extends XMLResourceIdentifierImpl
     }
     
     /**
+     * @return true is the schema is external
+     */
+    public boolean isExternal() {
+        return fContextType == CONTEXT_INCLUDE ||
+               fContextType == CONTEXT_REDEFINE ||
+               fContextType == CONTEXT_IMPORT ||
+               fContextType == CONTEXT_ELEMENT ||
+               fContextType == CONTEXT_ATTRIBUTE ||
+               fContextType == CONTEXT_XSITYPE;
+    }
+    
+    /**
      * Compares this grammar with the given grammar. Currently, we compare 
      * the target namespaces.
      * 

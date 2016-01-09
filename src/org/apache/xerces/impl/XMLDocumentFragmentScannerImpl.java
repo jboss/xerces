@@ -24,6 +24,7 @@ import java.io.IOException;
 import org.apache.xerces.impl.io.MalformedByteSequenceException;
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
 import org.apache.xerces.util.AugmentationsImpl;
+import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLStringBuffer;
@@ -124,6 +125,10 @@ public class XMLDocumentFragmentScannerImpl
     /** Property identifier: entity resolver. */
     protected static final String ENTITY_RESOLVER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_RESOLVER_PROPERTY;
+    
+    /** Property identifier: security manager. */
+    protected static final String SECURITY_MANAGER_PROPERTY =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
     
     // recognized features and properties
 
@@ -394,6 +399,8 @@ public class XMLDocumentFragmentScannerImpl
                 fExternalSubsetResolver = null;
             }
         }
+        
+        fSecurityManager = (SecurityManager) componentManager.getProperty(SECURITY_MANAGER_PROPERTY);
 
     } // reset(XMLComponentManager)
 
@@ -774,6 +781,11 @@ public class XMLDocumentFragmentScannerImpl
         boolean empty = false;
         fAttributes.removeAllAttributes();
         do {
+            if (fSecurityManager != null && fAttributes.getLength() > fSecurityManager.getElementAttributeLimit())
+            {
+                reportFatalError("ElementAttributeLimit", new Object[]{fCurrentElement, Integer.toString(fSecurityManager.getElementAttributeLimit())});
+            }
+            
             // spaces
             boolean sawSpace = fEntityScanner.skipSpaces();
 
@@ -1641,6 +1653,11 @@ public class XMLDocumentFragmentScannerImpl
                         }
                         case SCANNER_STATE_START_OF_MARKUP: {
                             fMarkupDepth++;
+                            if (fSecurityManager != null && fMarkupDepth > fSecurityManager.getMaxElementDepth())
+                            {
+                                String name = fCurrentElement.rawname != null ? fCurrentElement.rawname : "";
+                                reportFatalError("MaxElementDepthExceeded", new Object[]{name, fMarkupDepth, fSecurityManager.getMaxElementDepth()});     
+                            }
                             if (fEntityScanner.skipChar('/')) {
                                 if (scanEndElement() == 0) {
                                     if (elementDepthIsZeroHook()) {
@@ -1703,6 +1720,11 @@ public class XMLDocumentFragmentScannerImpl
                         }
                         case SCANNER_STATE_REFERENCE: {
                             fMarkupDepth++;
+                            if (fSecurityManager != null && fMarkupDepth > fSecurityManager.getMaxElementDepth())
+                            {
+                                String name = fCurrentElement.rawname != null ? fCurrentElement.rawname : "";
+                                reportFatalError("MaxElementDepthExceeded", new Object[]{name, fMarkupDepth, fSecurityManager.getMaxElementDepth()});   
+                            }
                             // NOTE: We need to set the state beforehand
                             //       because the XMLEntityHandler#startEntity
                             //       callback could set the state to
@@ -1721,6 +1743,11 @@ public class XMLDocumentFragmentScannerImpl
                             // scan text decl
                             if (fEntityScanner.skipString("<?xml")) {
                                 fMarkupDepth++;
+                                if (fSecurityManager != null && fMarkupDepth > fSecurityManager.getMaxElementDepth())
+                                {
+                                    String name = fCurrentElement.rawname != null ? fCurrentElement.rawname : "";
+                                    reportFatalError("MaxElementDepthExceeded", new Object[]{name, fMarkupDepth, fSecurityManager.getMaxElementDepth()});   
+                                }
                                 // NOTE: special case where entity starts with a PI
                                 //       whose name starts with "xml" (e.g. "xmlfoo")
                                 if (isValidNameChar(fEntityScanner.peekChar())) {

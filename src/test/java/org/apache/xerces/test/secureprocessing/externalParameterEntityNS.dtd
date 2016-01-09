@@ -1,0 +1,3 @@
+<!ELEMENT test:externalParameterEntity ANY >
+<!ATTLIST test:externalParameterEntity xmlns:test CDATA #REQUIRED>
+<!ENTITY foo "external parameter entity">

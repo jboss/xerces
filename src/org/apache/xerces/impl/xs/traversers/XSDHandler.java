@@ -65,6 +65,7 @@ import org.apache.xerces.util.DOMUtil;
 import org.apache.xerces.util.DefaultErrorHandler;
 import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SAXInputSource;
+import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.StAXInputSource;
 import org.apache.xerces.util.StAXLocationWrapper;
 import org.apache.xerces.util.SymbolHash;
@@ -214,6 +215,9 @@ public class XSDHandler {
         Constants.XERCES_PROPERTY_PREFIX + Constants.LOCALE_PROPERTY;
     
     protected static final boolean DEBUG_NODE_POOL = false;
+    
+    private static final String SECURE_PROCESSING =
+            Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
     
     // Data
     
@@ -443,6 +447,8 @@ public class XSDHandler {
     private XSDocumentInfo [] fKeyrefsMapXSDocumentInfo = new XSDocumentInfo[INIT_KEYREF_STACK];
     private XSElementDecl [] fKeyrefElems = new XSElementDecl [INIT_KEYREF_STACK];
     private String [][] fKeyrefNamespaceContext = new String[INIT_KEYREF_STACK][1];
+    
+    protected SecurityManager fSecurityManager;
     
     // global decls: map from decl name to decl object
     SymbolHash fGlobalAttrDecls = new SymbolHash();
@@ -3472,6 +3478,8 @@ public class XSDHandler {
         
         // set symbol table
         fSymbolTable = (SymbolTable) componentManager.getProperty(SYMBOL_TABLE);
+        
+        fSecurityManager = (SecurityManager) componentManager.getProperty(SECURITY_MANAGER);
         
         //set entity resolver
         fEntityResolver = (XMLEntityResolver) componentManager.getProperty(ENTITY_MANAGER);

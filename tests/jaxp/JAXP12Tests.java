@@ -31,6 +31,9 @@ import org.xml.sax.XMLReader;
 
 /**
  * Test JAXP 1.2 specific features
+ * 
+ * Note. Now that the SecureProcessingFeature is turned on by default, it is 
+ *       turned off in these tests, even though it is not a JAXP 1.2 feature. -Ron Sigal
  *
  * @author Edwin Goei
  * 
@@ -91,6 +94,7 @@ public class JAXP12Tests extends TestCase implements JAXPConstants {
 
     protected void setUp() throws Exception {
         dbf = DocumentBuilderFactory.newInstance();
+        dbf.setFeature("http://javax.xml.XMLConstants/feature/secure-processing", false);
         db = dbf.newDocumentBuilder();  // non-namespaceAware version
         dbf.setNamespaceAware(true);
         dbn = dbf.newDocumentBuilder(); // namespaceAware version
@@ -100,6 +104,7 @@ public class JAXP12Tests extends TestCase implements JAXPConstants {
         dbnv.setErrorHandler(new MyErrorHandler());
 
         spf = SAXParserFactory.newInstance();
+        spf.setFeature("http://javax.xml.XMLConstants/feature/secure-processing", false);
         spf.setNamespaceAware(true);
         spn = spf.newSAXParser();
         spf.setValidating(true);

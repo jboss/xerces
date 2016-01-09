@@ -1,0 +1,339 @@
+<section id="Properties">
+<title>Properties</title>
+
+<section>
+<title>Configuring properties</title>
+
+<para>
+  If the SECURE_PROCESSING_FEATURE is set to true, each property may be configured in three ways:
+</para>
+
+<orderedlist>
+  <listitem>
+    Setting a system property
+  </listitem>
+  <listitem>
+    <itemizedlist>
+      <para>Setting a parser property:</para>
+      <listitem>
+        SAX: A <classname>SAXParser</classname> may be configured by calling
+        <methodname>SAXParser.setProperty()</methodname> or by calling <methodname>setProperty()</methodname>on the
+        <classname>XMLReader</classname> retrieved from the <classname>SAXParser</classname>.
+      </listitem>
+      <listitem>
+        DOM: A <classname>DocumentBuilder</classname> may be configured by calling
+        <methodname>DocumentBuilderFactory.setAttribute()</methodname>
+        or by calling <methodname>setProperty()</methodname> on the 
+        <classname>DOMParser</classname> retrieved from the
+        <classname>org.apache.xerces.jaxp.DocumentBuilderImpl</classname>.
+      </listitem>
+    </itemizedlist> 
+  </listitem>
+  <listitem>
+    A set method on a <classname>SecurityManager</classname> may be invoked.
+  </listitem>
+</orderedlist>
+
+<para>
+  Note that <classname>SecurityManager</classname>s are created when a <classname>SAXParser</classname>
+  or a <classname>DocumentBuilder</classname> is created. The current <classname>SecurityManager</classname> can
+  be retrieved with the "http://apache.org/xml/properties/security-manager" property:
+</para>
+
+<programlisting>
+SAXParserFactory factory = SAXParserFactory.newInstance();
+SAXParser parser = factory.newSAXParser();
+SecurityManager securityManager = parser.getProperty("http://apache.org/xml/properties/security-manager");
+</programlisting>
+
+<para>
+or
+</para>
+
+<programlisting>
+DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+DocumentBuilderImpl builder = (DocumentBuilderImpl) dbf.newDocumentBuilder();
+SecurityManager securityManager = builder.getDOMParser().getProperty("http://apache.org/xml/properties/security-manager");
+</programlisting>
+
+<para>
+  <emphasis role="bold">Note</emphasis>. If the SECURE_PROCESSING_FEATURE is set to false,
+  the system and parser properties are ignored, and there is no <classname>SecurityManager</classname>.
+  That is, the properties simply do not apply.
+</para>
+
+<para>
+  <emphasis role="bold">Note</emphasis>. For numeric valued properties,
+  <itemizedlist>
+    <listitem>Any value &lt; 0 is interpreted as 0</listitem>
+    <listitem>0 is interpreted as Integer.MAX_VALUE</listitem>
+  </itemizedlist>
+</para>
+
+</section>
+
+<section>
+<title>Supported properties</title>
+
+<para>
+  The following properties are supported.
+</para>
+
+<para>
+  <emphasis role="bold">Note</emphasis>. For historical reasons, some of these have more than one
+  parser property.
+</para>
+
+<para>
+  <emphasis role="bold">RESOLVE_EXTERNAL_ENTITIES_PROPERTY</emphasis>:
+</para>
+<itemizedlist>
+  <listitem>
+    <emphasis role="bold">system property</emphasis>: jdk.xml.resolveExternalEntities
+  </listitem>
+  <listitem>
+    <emphasis role="bold">definition:</emphasis> 
+    When SECURE_PROCESSING_FEATURE is true, this special property controls the default value of several
+    other features and properties. See Table <link linkend="resolve">3.1</link>.
+    When SECURE_PROCESSING_FEATURE is false, RESOLVE_EXTERNAL_ENTITIES_PROPERTY is ignored.
+  </listitem>
+  <listitem>
+    <emphasis role="bold">default</emphasis>: false
+  </listitem>
+</itemizedlist>
+<para>
+
+</para>
+
+<table frame="all" rowsep="1" colsep="1" id="resolve">
+  <title>Effect of setting RESOLVE_EXTERNAL_ENTITIES_PROPERTY</title>
+  <tgroup cols="3" align="center" rowsep="1" colsep="1">
+    <colspec colname='c1' align="left"/>
+    <colspec colname='c2' align="center"/>
+    <colspec colname='c3' align="center"/>
+    <thead>
+      <row>
+        <entry align="left">RESOLVE_EXTERNAL_ENTITIES_PROPERTY</entry>
+        <entry align="center">FALSE</entry>
+        <entry align="center">TRUE</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+        <entry align="left">EXTERNAL_GENERAL_ENTITIES_FEATURE</entry>
+        <entry align="center">FALSE</entry>
+        <entry align="center">TRUE</entry>
+      </row>
+      <row>
+        <entry align="left">EXTERNAL_PARAMETER_ENTITIES_FEATURE</entry>
+        <entry align="center">FALSE</entry>
+        <entry align="center">TRUE</entry>
+      </row>
+      <row>
+        <entry align="left">LOAD_EXTERNAL_DTD_FEATURE</entry>
+        <entry align="center">FALSE</entry>
+        <entry align="center">TRUE</entry>
+      </row>
+      <row>
+        <entry align="left">ACCESS_EXTERNAL_DTD_PROPERTY</entry>
+        <entry align="center">""</entry>
+        <entry align="center">"all"</entry>
+      </row>
+      <row>
+        <entry align="left">ACCESS_EXTERNAL_SCHEMA_PROPERTY</entry>
+        <entry align="center">""</entry>
+        <entry align="center">"all"</entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+
+<para id="access_external_dtd">
+  <emphasis role="bold">ACCESS_EXTERNAL_DTD_PROPERTY</emphasis>
+  <itemizedlist>
+  <listitem>
+    <emphasis role="bold">system property</emphasis>: javax.xml.accessExternalDTD
+  </listitem>
+  <listitem>
+    <emphasis role="bold">parser property</emphasis>: http://javax.xml.XMLConstants/property/accessExternalDTD
+  </listitem>
+  <listitem>
+    <emphasis role="bold">definition</emphasis>: This property is a comma separated string which lists the protocols which can
+    be used to access external DTDs. For example, "all" means that any protocol can be used, "file,jar" means that the file and
+    jar protocols can be used, and "" means that no protocols can be used.
+  </listitem>
+  <listitem>
+    <emphasis role="bold">default</emphasis>: see Table <link linkend="resolve">3.1</link>
+  </listitem>
+  </itemizedlist>
+</para>
+
+<para>
+  <emphasis role="bold">ACCESS_EXTERNAL_SCHEMA_PROPERTY</emphasis>
+  <itemizedlist>
+  <listitem>
+    <emphasis role="bold">system property</emphasis>: javax.xml.accessExternalSchema
+  </listitem>
+  <listitem>
+    <emphasis role="bold">parser property</emphasis>: http://javax.xml.XMLConstants/property/accessExternalSchema
+  </listitem>
+  <listitem>
+    <emphasis role="bold">definition</emphasis>: This property is a comma separated string which lists the protocols which
+    can be used to access external schemas. For example, "all" means that any protocol can be used, "file,jar" means that the
+    file and jar protocols can be used, and "" means that no protocols can be used.
+  </listitem>
+  <listitem>
+    <emphasis role="bold">default</emphasis>: see Table <link linkend="resolve">3.1</link>
+  </listitem>
+</itemizedlist>
+</para>
+
+<para>
+  <emphasis role="bold">ELEMENT_ATTRIBUTE_LIMIT_PROPERTY</emphasis>
+  <itemizedlist>
+  <listitem>
+    <emphasis role="bold">system property</emphasis>: jdk.xml.elementAttributeLimit
+  </listitem>
+  <listitem>
+    <emphasis role="bold">parser property</emphasis>:
+    <itemizedlist>
+      <listitem>http://apache.org/xml/properties/elementAttributeLimit</listitem>
+      <listitem>http://www.oracle.com/xml/jaxp/properties/elementAttributeLimit</listitem>
+    </itemizedlist>
+  </listitem>
+  <listitem>
+    <emphasis role="bold">definition</emphasis>: Limits the number of attributes an element can have.
+  </listitem>
+  <listitem>
+    <emphasis role="bold">default</emphasis>: 10,000
+  </listitem>
+</itemizedlist>
+
+</para>
+
+<para>
+  <emphasis role="bold">ENTITY_EXPANSION_LIMIT_PROPERTY</emphasis>
+  <itemizedlist>
+  <listitem>
+    <emphasis role="bold">system property</emphasis>: jdk.xml.entityExpansionLimit
+  </listitem>
+  <listitem>
+    <emphasis role="bold">parser property</emphasis>:
+    <itemizedlist>
+      <listitem>http://apache.org/xml/properties/entity-expansion-limit</listitem>
+      <listitem>http://www.oracle.com/xml/jaxp/properties/entityExpansionLimit</listitem>
+    </itemizedlist>
+  </listitem>
+  <listitem>
+    <emphasis role="bold">definition</emphasis>: Limits the number of entity expansions.
+  </listitem>
+  <listitem>
+    <emphasis role="bold">default</emphasis>: 64,000
+  </listitem>
+</itemizedlist>
+
+</para>
+
+<para>
+  <emphasis role="bold">MAX_ELEMENT_DEPTH_PROPERTY</emphasis>
+  <itemizedlist>
+  <listitem>
+    <emphasis role="bold">system property</emphasis>: jdk.xml.maxElementDepth
+  </listitem>
+  <listitem>
+    <emphasis role="bold">parser property</emphasis>:
+    <itemizedlist>
+      <listitem>http://java.sun.com/xml/jaxp/properties/maxElementDepth</listitem>
+      <listitem>http://www.oracle.com/xml/jaxp/properties/maxElementDepth</listitem>
+    </itemizedlist>
+  </listitem>
+    <listitem>
+    <emphasis role="bold">definition</emphasis>: Limits the maximum element depth.
+  </listitem>
+  <listitem>
+    <emphasis role="bold">default</emphasis>: Integer.MAX_VALUE
+  </listitem>
+</itemizedlist>
+
+</para>
+
+<para>
+  <emphasis role="bold">MAX_OCCUR_LIMIT_PROPERTY</emphasis>
+  <itemizedlist>
+  <listitem>
+    <emphasis role="bold">system property</emphasis>: jdk.xml.maxOccur
+  </listitem>
+  <listitem>
+    <emphasis role="bold">parser property</emphasis>: http://www.oracle.com/xml/jaxp/properties/maxOccurLimit
+  </listitem>
+  <listitem>
+    <emphasis role="bold">definition</emphasis>: Limit the number of content model nodes that may be created when building a
+    grammar for a W3C XML Schema that contains maxOccurs attributes with values other than "unbounded".
+  </listitem>
+  <listitem>
+    <emphasis role="bold">default</emphasis>: 5000
+  </listitem>
+</itemizedlist>
+
+</para>
+
+<para>
+  <emphasis role="bold">MAX_GENERAL_ENTITY_SIZE_LIMIT</emphasis>
+  <itemizedlist>
+  <listitem>
+    <emphasis role="bold">system property</emphasis>: jdk.xml.maxGeneralEntitySizeLimit
+  </listitem>
+  <listitem>
+    <emphasis role="bold">parser property</emphasis>: http://www.oracle.com/xml/jaxp/properties/maxGeneralEntitySizeLimit
+  </listitem>
+  <listitem>
+    <emphasis role="bold">definition</emphasis>: Limits the maximum size of any general entities.
+  </listitem>
+  <listitem>
+    <emphasis role="bold">default</emphasis>: Integer.MAX_VALUE
+  </listitem>
+</itemizedlist>
+
+</para>
+
+<para>
+  <emphasis role="bold">MAX_PARAMETER_ENTITY_SIZE_LIMIT</emphasis>
+  <itemizedlist>
+  <listitem>
+    <emphasis role="bold">system property</emphasis>: jdk.xml.maxParameterEntitySizeLimit
+  </listitem>
+  <listitem>
+    <emphasis role="bold">parser property</emphasis>: http://www.oracle.com/xml/jaxp/properties/maxParameterEntitySizeLimit
+  </listitem>
+  <listitem>
+    <emphasis role="bold">definition</emphasis>: Limits the maximum size of any parameter entities, including
+    the result of nesting multiple parameter entities.
+  </listitem>
+  <listitem>
+    <emphasis role="bold">default</emphasis>: 1,000,000
+  </listitem>
+</itemizedlist>
+
+</para>
+
+<para>
+  <emphasis role="bold">MAX_TOTAL_ENTITY_SIZE_LIMIT</emphasis>
+  <itemizedlist>
+  <listitem>
+    <emphasis role="bold">system property</emphasis>: jdk.xml.totalEntitySizeLimit
+  </listitem>
+  <listitem>
+    <emphasis role="bold">parser property</emphasis>: http://www.oracle.com/xml/jaxp/properties/totalEntitySizeLimit
+  </listitem>
+  <listitem>
+    <emphasis role="bold">definition</emphasis>: Limits the total size of all entities that include general and parameter entities. ???
+  </listitem>
+  <listitem>
+    <emphasis role="bold">default</emphasis>: 50,000,000
+  </listitem>
+</itemizedlist>
+
+</para>
+
+</section>
+</section>
