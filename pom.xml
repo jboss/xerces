@@ -10,7 +10,7 @@
 
   <groupId>xerces</groupId>
   <artifactId>xercesImpl</artifactId>
-  <version>2.11.0.SP5-SNAPSHOT</version>
+  <version>2.11.0.SP5</version>
   <packaging>jar</packaging>
 
   <name>Xerces-J</name>
