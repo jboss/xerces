@@ -1,0 +1,32 @@
+<xs:schema targetNamespace="http://www.jboss.com/secureProcessing"
+           elementFormDefault="unqualified"
+           xmlns:test="http://www.jboss.com/secureProcessing"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+   <xs:element name="ent0">
+      <xs:complexType>
+         <xs:sequence>
+            <xs:element name="ent1">
+               <xs:complexType>
+                  <xs:sequence>
+                     <xs:element name = "ent2">
+                        <xs:complexType>
+                           <xs:sequence>
+                              <xs:element name="ent3">
+                                 <xs:complexType>
+                                    <xs:sequence>
+                                       <xs:element name="ent4" type="xs:string"/>
+                                    </xs:sequence>
+                                 </xs:complexType>
+                              </xs:element>
+                           </xs:sequence>
+                        </xs:complexType>
+                     </xs:element>
+                  </xs:sequence>
+               </xs:complexType>
+            </xs:element>
+         </xs:sequence>
+      </xs:complexType>
+   </xs:element>
+
+</xs:schema>

@@ -1,0 +1,11 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+   <xs:element name="foo">
+      <xs:complexType >
+         <xs:sequence minOccurs="0" maxOccurs="10000">
+            <xs:element name="bar" type="xs:string"/>
+         </xs:sequence>
+      </xs:complexType>
+   </xs:element>
+
+</xs:schema>

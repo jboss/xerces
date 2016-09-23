@@ -369,7 +369,7 @@ public class Counter {
 
                 // create parser
                 try {
-                    parser = (ParserWrapper)Class.forName(DEFAULT_PARSER_NAME).newInstance();
+                    parser = (ParserWrapper) Class.forName(DEFAULT_PARSER_NAME).getConstructor(boolean.class).newInstance(false);
                 }
                 catch (Exception e) {
                     System.err.println("error: Unable to instantiate parser ("+DEFAULT_PARSER_NAME+")");

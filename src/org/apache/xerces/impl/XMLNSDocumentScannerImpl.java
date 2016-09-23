@@ -155,6 +155,11 @@ extends XMLDocumentScannerImpl {
         boolean empty = false;
         fAttributes.removeAllAttributes();
         do {
+            if (fSecurityManager != null && fAttributes.getLength() > fSecurityManager.getElementAttributeLimit())
+            {
+                reportFatalError("ElementAttributeLimit", new Object[]{fCurrentElement, Integer.toString(fSecurityManager.getElementAttributeLimit())});
+            }
+            
             // spaces
             boolean sawSpace = fEntityScanner.skipSpaces();
 

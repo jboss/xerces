@@ -1,0 +1,2 @@
+<!ELEMENT externalParameterEntity ANY >
+<!ENTITY foo "external parameter entity">

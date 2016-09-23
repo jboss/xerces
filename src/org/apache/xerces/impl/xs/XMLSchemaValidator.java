@@ -53,6 +53,7 @@ import org.apache.xerces.impl.xs.models.CMNodeFactory;
 import org.apache.xerces.impl.xs.models.XSCMValidator;
 import org.apache.xerces.util.AugmentationsImpl;
 import org.apache.xerces.util.IntStack;
+import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLAttributesImpl;
 import org.apache.xerces.util.XMLChar;
@@ -252,6 +253,14 @@ public class XMLSchemaValidator
     /** Property identifier: Schema DV Factory */
     protected static final String SCHEMA_DV_FACTORY = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_DV_FACTORY_PROPERTY;
+    
+    /** Property identifier: Security property manager. */
+    protected static final String SECURITY_MANAGER_PROPERTY = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
+
+    /** Property identifier: access external schema */
+    private static final String ACCESS_EXTERNAL_SCHEMA_PROPERTY =
+        Constants.JAXP_JAVAX_PROPERTY_PREFIX + Constants.ACCESS_EXTERNAL_SCHEMA;
     
     // recognized features and properties
 
@@ -1292,6 +1301,12 @@ public class XMLSchemaValidator
     // used to apply default/fixed values
     // only need to check id/idref/entity, so we set checkFacets to false
     private ValidationState fState4ApplyDefault = new ValidationState();
+    
+    /** Valid protocols for loading schemas  */
+    private String fAccessExternalSchema;
+    
+    /** SecurityManager */
+    private SecurityManager fSecurityManager;
 
     // identity constraint information
 
@@ -1381,6 +1396,28 @@ public class XMLSchemaValidator
             parser_settings = true;
         }
 
+        try {
+            fSecurityManager = (SecurityManager) componentManager.getProperty(SECURITY_MANAGER_PROPERTY);
+        } catch (XMLConfigurationException e)
+        {
+            fSecurityManager = null;
+        }
+        
+        try {
+            fAccessExternalSchema = (String) componentManager.getProperty(ACCESS_EXTERNAL_SCHEMA_PROPERTY);
+        } catch (XMLConfigurationException e) {
+            //
+        }
+        if (fAccessExternalSchema == null) {
+            SecurityManager securityManager = (SecurityManager) componentManager.getProperty(SECURITY_MANAGER_PROPERTY);
+            if (securityManager != null) {
+                fAccessExternalSchema = securityManager.getAccessExternalSchema();
+            }
+            if (fAccessExternalSchema == null) {
+                fAccessExternalSchema = "all";
+            }
+        }
+        
         if (!parser_settings) {
             // parser settings have not been changed
             fValidationManager.addValidationState(fValidationState);
@@ -1391,6 +1428,7 @@ public class XMLSchemaValidator
                 fExternalSchemas,
                 fExternalNoNamespaceSchema,
                 fLocationPairs,
+                fAccessExternalSchema,
                 fXSIErrorReporter.fErrorReporter);
             return;
         }
@@ -1568,6 +1606,7 @@ public class XMLSchemaValidator
             fExternalSchemas,
             fExternalNoNamespaceSchema,
             fLocationPairs,
+            fAccessExternalSchema,
             fXSIErrorReporter.fErrorReporter);
 
         try {
@@ -2604,7 +2643,7 @@ public class XMLSchemaValidator
 
     void storeLocations(String sLocation, String nsLocation) {
         if (sLocation != null) {
-            if (!XMLSchemaLoader.tokenizeSchemaLocationStr(sLocation, fLocationPairs, fLocator == null ? null : fLocator.getExpandedSystemId())) {
+            if (!XMLSchemaLoader.tokenizeSchemaLocationStr(sLocation, fLocationPairs, fLocator == null ? null : fLocator.getExpandedSystemId(), fAccessExternalSchema)) {
                 // error!
                 fXSIErrorReporter.reportError(
                     XSMessageFormatter.SCHEMA_DOMAIN,

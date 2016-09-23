@@ -20,6 +20,7 @@ package org.apache.xerces.impl;
 import java.io.IOException;
 
 import org.apache.xerces.impl.msg.XMLMessageFormatter;
+import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLChar;
 import org.apache.xerces.util.XMLResourceIdentifierImpl;
@@ -96,6 +97,10 @@ public abstract class XMLScanner
     protected static final String ENTITY_MANAGER = 
         Constants.XERCES_PROPERTY_PREFIX + Constants.ENTITY_MANAGER_PROPERTY;
 
+    /** Property identifier: security manager. */
+    protected static final String SECURITY_MANAGER = 
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
+    
     // debugging
 
     /** Debug attribute normalization. */
@@ -122,6 +127,8 @@ public abstract class XMLScanner
     
     /** Internal parser-settings feature */
 	protected boolean fParserSettings = true;
+	
+	protected SecurityManager fSecurityManager;
 	
     // properties
 
@@ -231,6 +238,7 @@ public abstract class XMLScanner
         fSymbolTable = (SymbolTable)componentManager.getProperty(SYMBOL_TABLE);
         fErrorReporter = (XMLErrorReporter)componentManager.getProperty(ERROR_REPORTER);
         fEntityManager = (XMLEntityManager)componentManager.getProperty(ENTITY_MANAGER);
+        fSecurityManager = (SecurityManager)componentManager.getProperty(SECURITY_MANAGER);
 
         // sax features
         try {

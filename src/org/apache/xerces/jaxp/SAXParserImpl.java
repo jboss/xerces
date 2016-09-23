@@ -87,6 +87,14 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
     /** Property identifier: security manager. */
     private static final String SECURITY_MANAGER =
         Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
+    
+    /** Property identifier: access external DTD */
+    private static final String ACCESS_EXTERNAL_DTD_PROPERTY = 
+        Constants.JAXP_JAVAX_PROPERTY_PREFIX + Constants.ACCESS_EXTERNAL_DTD;
+    
+    /** Property identifier: access external schema */
+    private static final String ACCESS_EXTERNAL_SCHEMA_PROPERTY =
+        Constants.JAXP_JAVAX_PROPERTY_PREFIX + Constants.ACCESS_EXTERNAL_SCHEMA;
 
     private final JAXPSAXParser xmlReader;
     private String schemaLanguage = null;     // null means DTD
@@ -109,7 +117,7 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
      */
     SAXParserImpl(SAXParserFactoryImpl spf, Hashtable features) 
         throws SAXException {
-        this(spf, features, false);
+        this(spf, features, true);
     }
     
     /**
@@ -120,7 +128,7 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
         throws SAXException
     {
         // Instantiate a SAXParser directly and not through SAX so that we use the right ClassLoader
-        xmlReader = new JAXPSAXParser(this);
+        xmlReader = new JAXPSAXParser(this, secureProcessing);
 
         // JAXP "namespaceAware" == SAX Namespaces feature
         // Note: there is a compatibility problem here with default values:
@@ -137,11 +145,6 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
         // does not support XInclude.
         if (spf.isXIncludeAware()) {
             xmlReader.setFeature0(XINCLUDE_FEATURE, true);
-        }
-        
-        // If the secure processing feature is on set a security manager.
-        if (secureProcessing) {
-            xmlReader.setProperty0(SECURITY_MANAGER, new SecurityManager());
         }
         
         // Set application's features, followed by validation features.
@@ -364,14 +367,28 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
         private final HashMap fInitFeatures = new HashMap();
         private final HashMap fInitProperties = new HashMap();
         private final SAXParserImpl fSAXParser;
+        private SecurityManager fSecurityManager;
 
         public JAXPSAXParser() {
-            this(null);
+            this(null, true);
         }
         
-        JAXPSAXParser(SAXParserImpl saxParser) {
-            super();
+        public JAXPSAXParser(SAXParserImpl saxParser)
+        {
+            this(saxParser, true);
+        }
+        
+        JAXPSAXParser(SAXParserImpl saxParser, boolean secureProcessing) {
+            super((XMLParserConfiguration)ObjectFactory.createObject(
+                    "org.apache.xerces.xni.parser.XMLParserConfiguration",
+                    secureProcessing ? "org.apache.xerces.parsers.SecureProcessingConfiguration" :
+                    "org.apache.xerces.parsers.XIncludeAwareParserConfiguration"
+                    ));
             fSAXParser = saxParser;
+            fSecurityManager = (SecurityManager) fConfiguration.getProperty(SECURITY_MANAGER);
+            if (fSecurityManager == null) {
+                fSecurityManager = new SecurityManager();
+            }
         }
         
         /**
@@ -445,6 +462,11 @@ public class SAXParserImpl extends javax.xml.parsers.SAXParser
                 // TODO: Add localized error message.
                 throw new NullPointerException(); 
             }
+
+            if (fSecurityManager.setIfManagedBySecurityManager(name, value)) {
+                return;
+            }
+            
             if (fSAXParser != null) {
                 // JAXP 1.2 support
                 if (JAXP_SCHEMA_LANGUAGE.equals(name)) {

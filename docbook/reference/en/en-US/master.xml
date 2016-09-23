@@ -1,0 +1,25 @@
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+                         "http://www.docbook.org/xml/4.4/docbookx.dtd"
+        [
+         <!ENTITY Introduction  SYSTEM "modules/Introduction.xml">
+         <!ENTITY Features      SYSTEM "modules/Features.xml">
+         <!ENTITY Properties    SYSTEM "modules/Properties.xml">
+         <!ENTITY Compatibility SYSTEM "modules/Compatibility.xml">
+        ]>
+
+<article>
+
+   <articleinfo>
+      <title>Xerces: Secure Processing Configuration</title>
+      <releaseinfo>2.11.0.SP5</releaseinfo>
+   </articleinfo>
+
+   <!--toc/-->
+
+   &Introduction;
+   &Features;
+   &Properties;
+   &Compatibility;
+
+</article>
+

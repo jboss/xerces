@@ -73,6 +73,15 @@ public abstract class BaseTest extends TestCase {
     protected final static String DOCUMENT_CLASS_NAME = Constants.XERCES_PROPERTY_PREFIX
         + Constants.DOCUMENT_CLASS_NAME_PROPERTY;
     
+    protected static final String SECURE_PROCESSING_FEATURE = 
+            "http://javax.xml.XMLConstants/feature/secure-processing";
+    
+    protected static final String LOAD_EXTERNAL_DTD_FEATURE =
+          Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE;
+    
+    protected static final String DISALLOW_DOCTYPE_FEATURE = 
+          "http://apache.org/xml/features/disallow-doctype-decl";
+    
     protected Validator fValidator;
     protected SpecialCaseErrorHandler fErrorHandler;
     protected Document fDocument;
@@ -97,6 +106,9 @@ public abstract class BaseTest extends TestCase {
         docFactory.setAttribute(DOCUMENT_CLASS_NAME,
         "org.apache.xerces.dom.PSVIDocumentImpl");
         docFactory.setNamespaceAware(true);
+        docFactory.setFeature(SECURE_PROCESSING_FEATURE, false);
+        docFactory.setFeature(LOAD_EXTERNAL_DTD_FEATURE, true);
+        docFactory.setFeature(DISALLOW_DOCTYPE_FEATURE, false);
         DocumentBuilder builder = docFactory.newDocumentBuilder();
         // build the location URL of the document
         String packageDir = this.getClass().getPackage().getName().replace('.',

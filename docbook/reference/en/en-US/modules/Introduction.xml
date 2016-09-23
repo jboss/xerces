@@ -1,0 +1,51 @@
+<section id="Introduction">
+<title>Introduction</title>
+
+<para>
+Xerces, like all XML parsers, is vulnerable to a variety of Denial of Service attacks, such as
+XXE (XML External Entity) attacks, and a number of features and
+properties have been introduced over time to strengthen its defenses. These have various sources.
+</para>
+
+<itemizedlist>
+  <listitem>
+Some, such as SECURE_PROCESSING_FEATURE
+(http://javax.xml.XMLConstants/feature/secure-processing), were introduced in one of the series of JAXP
+specifications.  
+  </listitem>
+  <listitem>
+ Some, such as EXTERNAL_GENERAL_ENTITIES_FEATURE 
+(http://xml.org/sax/features/external-general-entities), were introduced in the de facto SAX standard.  
+  </listitem>
+  <listitem>
+Others, such as DISALLOW_DOCTYPE_DECL_FEATURE (http://apache.org/xml/features/disallow-doctype-decl), were
+introduced by Xerces.  
+  </listitem>
+  <listitem>
+And some, such as ACCESS_EXTERNAL_DTD_PROPERTY (http://javax.xml.XMLConstants/property/accessExternalDTD) and
+MAX_TOTAL_ENTITY_SIZE_LIMIT (http://www.oracle.com/xml/jaxp/properties/totalEntitySizeLimit) were introduced in
+the Oracle reference implementation of JAXP.
+  </listitem>
+</itemizedlist>
+
+<para>
+As of release 2.11.0.SP5, the JBoss fork of Xerces implements all of the related security features and 
+properties found in Oracle JDK 1.8.0_11.
+</para>
+
+<para>
+  <emphasis role="bold">N.B.</emphasis> When Xerces is accessed by way of JAXP sanctioned classes
+  <classname>javax.xml.parsers.SAXParserFactory</classname> and
+  <classname>javax.xml.parsers.DocumentBuilderFactory</classname>, all of these features and properties
+  are assigned security promoting default values.
+</para>
+
+<para>
+  <emphasis role="bold">N.B.</emphasis> These features and properties have default values that incline
+  toward increased security. That means that it is possible for some currently working applications to fail
+  in the presence of a Xerces upgrade. For example, the default value of DISALLOW_DOCTYPE_DECL_FEATURE is
+  true, which means that DTDs cannot be used. <emphasis role="bold">It follows that additional configuration
+  may be necessary to preserve the functionality of existing applications.</emphasis>
+</para>
+
+</section>

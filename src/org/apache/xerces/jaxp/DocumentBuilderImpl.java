@@ -32,7 +32,6 @@ import org.apache.xerces.impl.validation.ValidationManager;
 import org.apache.xerces.impl.xs.XMLSchemaValidator;
 import org.apache.xerces.jaxp.validation.XSGrammarPoolContainer;
 import org.apache.xerces.parsers.DOMParser;
-import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.xni.XMLDocumentHandler;
 import org.apache.xerces.xni.parser.XMLComponent;
 import org.apache.xerces.xni.parser.XMLComponentManager;
@@ -114,7 +113,7 @@ public class DocumentBuilderImpl extends DocumentBuilder
     DocumentBuilderImpl(DocumentBuilderFactoryImpl dbf, Hashtable dbfAttrs, Hashtable features, boolean secureProcessing)
         throws SAXNotRecognizedException, SAXNotSupportedException
     {
-        domParser = new DOMParser();
+        domParser = new DOMParser(secureProcessing);
 
         // If validating, provide a default ErrorHandler that prints
         // validation errors with a warning telling the user to set an
@@ -147,11 +146,6 @@ public class DocumentBuilderImpl extends DocumentBuilder
         // does not support XInclude.
         if (dbf.isXIncludeAware()) {
             domParser.setFeature(XINCLUDE_FEATURE, true);
-        }
-        
-        // If the secure processing feature is on set a security manager.
-        if (secureProcessing) {
-            domParser.setProperty(SECURITY_MANAGER, new SecurityManager());
         }
         
         this.grammar = dbf.getSchema();
@@ -355,11 +349,11 @@ public class DocumentBuilderImpl extends DocumentBuilder
         }
     }
 
-    // package private
-    DOMParser getDOMParser() {
+    public DOMParser getDOMParser() {
         return domParser;
     }
-    
+
+    // package private
     private void resetSchemaValidator() throws SAXException {
         try {
             fSchemaValidator.reset(fSchemaValidatorComponentManager);

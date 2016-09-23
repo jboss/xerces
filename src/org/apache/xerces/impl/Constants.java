@@ -120,13 +120,41 @@ public final class Constants {
     public static final String JAXP_PROPERTY_PREFIX =
         "http://java.sun.com/xml/jaxp/properties/";
     
+    /** JAXP property prefix ("http://java.sun.com/xml/jaxp/properties/"). */
+    public static final String JAXP_ORACLE_PROPERTY_PREFIX =
+        "http://www.oracle.com/xml/jaxp/properties/";
+    
+    /** JAXP property prefix ("http://javax.xml.XMLConstants/property/"). */
+    public static final String JAXP_JAVAX_PROPERTY_PREFIX =
+        "http://javax.xml.XMLConstants/property/";
+    
     /** JAXP schemaSource property: when used internally may include DTD sources (DOM) */
     public static final String SCHEMA_SOURCE = "schemaSource";
     
     /** JAXP schemaSource language: when used internally may include DTD namespace (DOM) */
     public static final String SCHEMA_LANGUAGE = "schemaLanguage";
     
+    /** JAXP property: restrict access to external DTDs by protocol */
+    public static final String ACCESS_EXTERNAL_DTD = "accessExternalDTD";
+
+    /** JAXP property: restrict access to external schemas by protocol */
+    public static final String ACCESS_EXTERNAL_SCHEMA = "accessExternalSchema";
     
+    /** JAXP property: limit the value of maxOccurs attribute in XML schema */
+    public static final String MAX_OCCUR_LIMIT = "maxOccurLimit";
+    
+    /** JAXP property: limit the maximum size of any general entities */
+    public static final String MAX_GENERAL_ENTITY_SIZE_LIMIT = "maxGeneralEntitySizeLimit";
+    
+    /** JAXP property: limit the maximum size of any parameter entities */
+    public static final String MAX_PARAMETER_ENTITY_SIZE_LIMIT = "maxParameterEntitySizeLimit";
+    
+    /** JAXP property: limit the total size of all entities that include general and parameter entities */
+    public static final String MAX_TOTAL_ENTITY_SIZE_LIMIT = "totalEntitySizeLimit";
+    
+    /** JAXP property: limit the maximum element depth */
+    public static final String MAX_ELEMENT_DEPTH = "maxElementDepth";
+
     //
     // DOM features
     //
@@ -430,6 +458,13 @@ public final class Constants {
     
     /** Schema element declaration for the root element in a document ("internal/validation/schema/dv-factory"). */
     public static final String SCHEMA_DV_FACTORY_PROPERTY = "internal/validation/schema/dv-factory";
+
+    /** Limit the number of entity expansions */
+    public static final String ENTITY_EXPANSION_LIMIT_PROPERTY = "entity-expansion-limit";
+    public static final String ENTITY_EXPANSION_LIMIT_PROPERTY2 = "entityExpansionLimit";
+    
+    /** Limit the number of attributes an element can have */
+    public static final String ELEMENT_ATTRIBUTE_LIMIT_PROPERTY = "elementAttributeLimit";
     
     // general constants
     
@@ -554,6 +589,8 @@ public final class Constants {
             ROOT_TYPE_DEFINITION_PROPERTY,
             ROOT_ELEMENT_DECLARATION_PROPERTY,
             SCHEMA_DV_FACTORY_PROPERTY,
+            ENTITY_EXPANSION_LIMIT_PROPERTY,
+            ENTITY_EXPANSION_LIMIT_PROPERTY2
     };
     
     /** Empty enumeration. */
