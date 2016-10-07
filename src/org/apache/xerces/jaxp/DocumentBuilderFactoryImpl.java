@@ -28,6 +28,7 @@ import javax.xml.validation.Schema;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.util.SAXMessageFormatter;
+import org.apache.xerces.util.SecurityManager;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -74,9 +75,9 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     private boolean isXIncludeAware;
     
     /**
-     * State of the secure processing feature, initially <code>false</code>
+     * State of the secure processing feature, initially <code>true</code>
      */
-    private boolean fSecureProcess = false;
+    private boolean fSecureProcess = true;
 
     /**
      * Creates a new instance of a {@link javax.xml.parsers.DocumentBuilder}
@@ -164,7 +165,7 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
             // We create a dummy DocumentBuilderImpl in case the attribute
             // name is not one that is in the attributes hashtable.
             domParser =
-                new DocumentBuilderImpl(this, attributes, features).getDOMParser();
+                new DocumentBuilderImpl(this, attributes, features, fSecureProcess).getDOMParser();
             return domParser.getProperty(name);
         } catch (SAXException se1) {
             // assert(name is not recognized or not supported), try feature

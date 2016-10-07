@@ -26,6 +26,7 @@ import org.apache.xerces.util.EntityResolver2Wrapper;
 import org.apache.xerces.util.EntityResolverWrapper;
 import org.apache.xerces.util.ErrorHandlerWrapper;
 import org.apache.xerces.util.SAXMessageFormatter;
+import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
@@ -85,9 +86,31 @@ public class DOMParser
         XMLGRAMMAR_POOL,
     };
     
+    /** Property identifier: security manager. */
+    private static final String SECURITY_MANAGER =
+        Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY;
+    
+    /** Property identifier: access external DTD */
+    private static final String ACCESS_EXTERNAL_DTD_PROPERTY = 
+        Constants.JAXP_JAVAX_PROPERTY_PREFIX + Constants.ACCESS_EXTERNAL_DTD;
+    
+    /** Property identifier: access external schema */
+    private static final String ACCESS_EXTERNAL_SCHEMA_PROPERTY =
+        Constants.JAXP_JAVAX_PROPERTY_PREFIX + Constants.ACCESS_EXTERNAL_SCHEMA;
+    
+    /** Feature identifier: load external DTD. */
+    private static final String LOAD_EXTERNAL_DTD =
+        Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE;
+    
+    /** Feature identifier: disallow DTDs. */
+    protected static final String DISALLOW_DOCTYPE_DECL_FEATURE =
+        Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
+    
     //
     // Data
     //
+    
+    protected SecurityManager fSecurityManager;
     
     // features
     
@@ -109,14 +132,21 @@ public class DOMParser
      * Constructs a DOM parser using the dtd/xml schema parser configuration.
      */
     public DOMParser() {
-        this(null, null);
+        this(null, null, true);
     } // <init>()
 
+    /**
+     * Constructs a DOM parser using the dtd/xml schema parser configuration and secure processing flag.
+     */
+    public DOMParser(boolean secureProcessing) {
+        this(null, null, secureProcessing);
+    } // <init>()
+    
     /**
      * Constructs a DOM parser using the specified symbol table.
      */
     public DOMParser(SymbolTable symbolTable) {
-        this(symbolTable, null);
+        this(symbolTable, null, true);
     } // <init>(SymbolTable)
 
 
@@ -124,9 +154,18 @@ public class DOMParser
      * Constructs a DOM parser using the specified symbol table and
      * grammar pool.
      */
-    public DOMParser(SymbolTable symbolTable, XMLGrammarPool grammarPool) {
+    public DOMParser(SymbolTable symbolTable, XMLGrammarPool grammarPool)
+    {
+        this(symbolTable, grammarPool, true);
+    }
+   
+    /**
+     * Constructs a DOM parser using the specified symbol table, grammar pool, and secure processing flag.
+     */
+    public DOMParser(SymbolTable symbolTable, XMLGrammarPool grammarPool, boolean secureProcessing) {
         super((XMLParserConfiguration)ObjectFactory.createObject(
             "org.apache.xerces.xni.parser.XMLParserConfiguration",
+            secureProcessing ? "org.apache.xerces.parsers.SecureProcessingConfiguration" :
             "org.apache.xerces.parsers.XIncludeAwareParserConfiguration"
             ));
 
@@ -137,6 +176,13 @@ public class DOMParser
         }
         if (grammarPool != null) {
             fConfiguration.setProperty(XMLGRAMMAR_POOL, grammarPool);
+        }
+        
+        // Look for shared SecurityManager.
+        // If none, get a SecurityManager for local use in setProperty().
+        fSecurityManager = (SecurityManager) fConfiguration.getProperty(SECURITY_MANAGER);
+        if (fSecurityManager == null) {
+            fSecurityManager = new SecurityManager();
         }
 
     } // <init>(SymbolTable,XMLGrammarPool)
@@ -522,6 +568,10 @@ public class DOMParser
     public void setProperty(String propertyId, Object value)
         throws SAXNotRecognizedException, SAXNotSupportedException {
 
+        if (fSecurityManager.setIfManagedBySecurityManager(propertyId, value)) {
+            return;
+        }
+        
         try {
             fConfiguration.setProperty(propertyId, value);
         }

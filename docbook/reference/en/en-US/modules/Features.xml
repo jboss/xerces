@@ -1,0 +1,92 @@
+<section id="Features">
+<title>Features</title>
+
+<para>
+  Everything begins with <emphasis role="bold">SECURE_PROCESSING_FEATURE</emphasis>
+  (http://javax.xml.XMLConstants/feature/secure-processing). It is defined in the JAXP specification,
+  and all JAXP conformant software is required to support it. When it is set to true, all of the other
+  features and properties described here are assigned default values that promote security. When it is
+  set to false, the other features and properties are ignored. Its default value is true.
+</para>
+
+<para>
+  In SAX, a feature may be set to true or false either by calling <methodname>SAXParserFactory.setFeature()</methodname>
+  or by calling <methodname>setFeature()</methodname> directly on the <classname>XMLReader</classname> retrieved
+  from the <classname>SAXParser</classname>.
+  In DOM, a feature may be set either by calling <methodname>DocumentBuilderFactory.setFeature()</methodname> or
+  by calling <methodname>setFeature()</methodname> directly on the <classname>DOMParser</classname> retrieved
+  from the <classname>DocumentBuilder</classname>.
+</para>
+
+<para>
+  The following security features are supported. The default values given assume that SECURE_PROCESSING_FEATURE
+  is set to true.
+</para>
+
+<para>
+  <emphasis role="bold">DISALLOW_DOCTYPE_DECL_FEATURE</emphasis>
+  <itemizedlist>
+  <listitem>
+    <emphasis role="bold">parser/factory feature</emphasis>: http://apache.org/xml/features/disallow-doctype-decl
+  </listitem>
+  <listitem>
+    <emphasis role="bold">definition:</emphasis>  Setting this property to true outlaws all DTDs, internal or external.
+    Setting it to false permits the parser to use DTDs.
+  </listitem>
+  <listitem>
+    <emphasis role="bold">default</emphasis>: true
+  </listitem>
+</itemizedlist>
+</para>
+
+<para>
+  <emphasis role="bold">EXTERNAL_GENERAL_ENTITIES_FEATURE</emphasis>
+  <itemizedlist>
+  <listitem>
+    <emphasis role="bold">parser/factory feature</emphasis>: http://xml.org/sax/features/external-general-entities
+  </listitem>
+  <listitem>
+    <emphasis role="bold">definition:</emphasis> Setting this property to true allows the parser to load external
+    general entities, and setting it to false prevents the parser from doing so. 
+  </listitem>
+  <listitem>
+    <emphasis role="bold">default</emphasis>: false
+  </listitem>
+</itemizedlist>
+</para>
+
+<para>
+  <emphasis role="bold">EXTERNAL_PARAMETER_ENTITIES_FEATURE</emphasis>
+  <itemizedlist>
+  <listitem>
+    <emphasis role="bold">parser/factory feature</emphasis>: http://xml.org/sax/features/external-parameter-entities
+  </listitem>
+  <listitem>
+    <emphasis role="bold">definition:</emphasis> Setting this property to true allows the parser to load external DTD
+    subsets referenced by external parameter entities, and  setting it to false prevents the parser from doing so. 
+  </listitem>
+  <listitem>
+    <emphasis role="bold">default</emphasis>: false
+  </listitem>
+</itemizedlist>
+</para>
+
+<para>
+  <emphasis role="bold">LOAD_EXTERNAL_DTD_FEATURE</emphasis>
+  <itemizedlist>
+  <listitem>
+    <emphasis role="bold">parser/factory feature</emphasis>: http://apache.org/xml/features/nonvalidating/load-external-dtd
+  </listitem>
+  <listitem>
+    <emphasis role="bold">definition:</emphasis> Setting this property to true allows the parser to load external DTDs, and
+    setting it to false prevents the parser from doing so. <emphasis role="bold">Note</emphasis>. This feature is relevant
+    only if the parser is configured not to do validation. If the parser is configured to do validation, external DTDs are
+    eligible to be loaded. See also <link linkend="access_external_dtd">ACCESS_EXTERNAL_DTD_PROPERTY</link>.
+  </listitem>
+  <listitem>
+    <emphasis role="bold">default</emphasis>: false
+  </listitem>
+</itemizedlist>
+</para>
+
+</section>

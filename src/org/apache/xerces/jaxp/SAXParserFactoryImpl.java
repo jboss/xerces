@@ -59,9 +59,9 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
     private boolean isXIncludeAware;
     
     /**
-     * State of the secure processing feature, initially <code>false</code>
+     * State of the secure processing feature, initially <code>true</code>
      */
-    private boolean fSecureProcess = false;
+    private boolean fSecureProcess = true;
 
     /**
      * Creates a new instance of <code>SAXParser</code> using the currently
@@ -91,7 +91,7 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
         
         SAXParserImpl saxParserImpl;
         try {
-            saxParserImpl = new SAXParserImpl(this, features);
+            saxParserImpl = new SAXParserImpl(this, features, fSecureProcess);
         } catch (SAXNotSupportedException e) {
             throw e;
         } catch (SAXNotRecognizedException e) {

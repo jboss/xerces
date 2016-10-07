@@ -1169,6 +1169,38 @@ public class XSAttributeChecker {
             int min = ((XInt)attrValues[ATTIDX_MINOCCURS]).intValue();
             int max = ((XInt)attrValues[ATTIDX_MAXOCCURS]).intValue();
             if (max != SchemaSymbols.OCCURRENCE_UNBOUNDED) {
+                
+                // maxOccurLimit is only checked in secure mode
+                if (fSchemaHandler.fSecurityManager != null) {
+                    String localName = element.getLocalName();
+
+                    // The maxOccurs restriction no longer applies to elements
+                    // and wildcards in a sequence in which they are the only
+                    // particle. These are now validated using a constant
+                    // space algorithm. The restriction still applies to all
+                    // other cases.
+
+                    // Determine if constant-space algorithm can be applied
+                    final boolean optimize =
+                            (localName.equals("element") || localName.equals("any")) &&
+                            (element.getNextSibling() == null) &&
+                            (element.getPreviousSibling() == null) &&
+                            (element.getParentNode().getLocalName().equals("sequence"));
+
+                    if (!optimize) {
+                        // Revisit :: IMO this is not right place to check
+                        // maxOccurNodeLimit. Comment from jdk.
+                        int maxOccurNodeLimit = fSchemaHandler.fSecurityManager.getMaxOccurNodeLimit();
+                        if (max > maxOccurNodeLimit) {
+                            reportSchemaError("maxOccurLimit", new Object[] {new Integer(maxOccurNodeLimit)}, element);
+
+                            // reset max values in case processing continues on error
+                            attrValues[ATTIDX_MAXOCCURS] = fXIntPool.getXInt(maxOccurNodeLimit);
+                            max = maxOccurNodeLimit;
+                        }
+                    }
+                }
+                
                 if (min > max) {
                     reportSchemaError ("p-props-correct.2.1",
                                        new Object[] {elName, attrValues[ATTIDX_MINOCCURS], attrValues[ATTIDX_MAXOCCURS]},
