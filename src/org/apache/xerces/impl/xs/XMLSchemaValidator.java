@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -3705,6 +3707,7 @@ public class XMLSchemaValidator
 
         /** global data */
         public final Vector fValues = new Vector();
+        public final Set fValueSet = new HashSet();
         public ShortVector fValueTypes = null;
         public Vector fItemValueTypes = null;
         
@@ -3751,6 +3754,7 @@ public class XMLSchemaValidator
             fItemValueTypesLength = 0;
             fItemValueType = null;
             fValues.setSize(0);
+            fValueSet.clear();
             if (fValueTypes != null) {
                 fValueTypes.clear();
             }
@@ -3763,6 +3767,9 @@ public class XMLSchemaValidator
         public void append(ValueStoreBase newVal) {
             for (int i = 0; i < newVal.fValues.size(); i++) {
                 fValues.addElement(newVal.fValues.elementAt(i));
+                Object fValue = newVal.fValues.elementAt(i);
+                fValues.addElement(fValue);
+                fValueSet.add(fValue);
             }
         } // append(ValueStoreBase)
 
@@ -3878,6 +3885,7 @@ public class XMLSchemaValidator
                 // store values
                 for (i = 0; i < fFieldCount; i++) {
                     fValues.addElement(fLocalValues[i]);
+                    fValueSet.add(fLocalValues[i]);
                     addValueType(fLocalValueTypes[i]);
                     addItemValueType(fLocalItemValueTypes[i]);
                 }
@@ -3890,6 +3898,9 @@ public class XMLSchemaValidator
         public boolean contains() {
             // REVISIT: we can improve performance by using hash codes, instead of
             // traversing global vector that could be quite large.
+
+	     if (!isContainsCandidate()) return false;
+
             int next = 0;
             final int size = fValues.size();
             LOOP : for (int i = 0; i < size; i = next) {
@@ -3916,6 +3927,22 @@ public class XMLSchemaValidator
             // didn't find it
             return false;
         } // contains():boolean
+
+	/**
+         * Return true is all values are in the 'value set'.
+         * I.e. this is a possible contains match.
+         */
+        private boolean isContainsCandidate() {
+            for (int i = 0; i < fFieldCount; i++) {
+                Object value1 = fLocalValues[i];
+                if (value1 == null) return false;
+
+                if(!fValueSet.contains(value1)) {
+                    return false;
+                }
+            }
+            return true;
+        } // isContainsCandidate():boolean
 
         /**
          * Returns -1 if this value store contains the specified
