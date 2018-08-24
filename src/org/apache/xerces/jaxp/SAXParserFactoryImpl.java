@@ -59,9 +59,9 @@ public class SAXParserFactoryImpl extends SAXParserFactory {
     private boolean isXIncludeAware;
     
     /**
-     * State of the secure processing feature, initially <code>false</code>
+     * State of the secure processing feature, initially <code>true</code>
      */
-    private boolean fSecureProcess = false;
+    private boolean fSecureProcess = true;
 
     /**
      * Creates a new instance of <code>SAXParser</code> using the currently
