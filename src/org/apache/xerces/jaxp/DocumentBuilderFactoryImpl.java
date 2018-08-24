@@ -74,9 +74,10 @@ public class DocumentBuilderFactoryImpl extends DocumentBuilderFactory {
     private boolean isXIncludeAware;
     
     /**
-     * State of the secure processing feature, initially <code>false</code>
+     * State of the secure processing feature, initially <code>true</code>
      */
-    private boolean fSecureProcess = false;
+    public static boolean SECURE_PROCESS_DEFAULT = true;
+    private boolean fSecureProcess = SECURE_PROCESS_DEFAULT;
 
     /**
      * Creates a new instance of a {@link javax.xml.parsers.DocumentBuilder}
