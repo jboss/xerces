@@ -10,6 +10,9 @@
 
   <groupId>xerces</groupId>
   <artifactId>xercesImpl</artifactId>
+  <!-- WARNING: JBoss Xerces 2.12.0.SP06 was released with the same content as 2.12.0.SP03 --> 
+  <!-- As a result, in the future we should skip releasing 2.12.0.SP06 -->
+  <!-- After we release 2.12.0.SP05, please update below version to 2.12.0.SP07-SNAPSHOT (so we are ready to next release 2.12.0.SP07) --> 
   <version>2.12.0.SP04-SNAPSHOT</version>
   <packaging>jar</packaging>
 
