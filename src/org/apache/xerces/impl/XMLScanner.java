@@ -1257,7 +1257,9 @@ public abstract class XMLScanner
     public void endEntity(String name, Augmentations augs) throws XNIException {
 
         // keep track of the entity depth
-        fEntityDepth--;
+        if (fEntityDepth > 0) {
+            fEntityDepth--;
+        }
 
     } // endEntity(String)
 
