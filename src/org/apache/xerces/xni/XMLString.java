@@ -42,6 +42,8 @@ package org.apache.xerces.xni;
  * @version $Id$
  */
 public class XMLString {
+    /** Default buffer size (32). */
+    public static final int DEFAULT_SIZE = 32;
 
     //
     // Data
@@ -185,5 +187,79 @@ public class XMLString {
     public String toString() {
         return length > 0 ? new String(ch, offset, length) : "";
     } // toString():String
+
+    /**
+     * Appends a char to the buffer.
+     *
+     * @param c the char
+     */
+    public void append(char c) {
+        if(this.length + 1 > this.ch.length){
+            int newLength = this.ch.length * 2 ;
+            if(newLength < this.ch.length + DEFAULT_SIZE){
+                newLength = this.ch.length + DEFAULT_SIZE;
+            }
+            char [] tmp = new char[newLength];
+            System.arraycopy(this.ch, 0, tmp, 0, this.length);
+            this.ch = tmp;
+        }
+        this.ch[this.length] = c ;
+        this.length++;
+    } // append(char)
+
+    /**
+     * Appends a string to the buffer.
+     *
+     * @param s the string
+     */
+    public void append(String s) {
+        int length = s.length();
+        if (this.length + length > this.ch.length) {
+            int newLength = this.ch.length * 2 ;
+            if(newLength < this.ch.length + length + DEFAULT_SIZE){
+                newLength = this.ch.length + length+ DEFAULT_SIZE;
+            }
+
+            char[] newch = new char[newLength];
+            System.arraycopy(this.ch, 0, newch, 0, this.length);
+            this.ch = newch;
+        }
+        s.getChars(0, length, this.ch, this.length);
+        this.length += length;
+    } // append(String)
+
+    /**
+     * Appends a number of characters to the buffer.
+     *
+     * @param ch the char array
+     * @param offset the offset
+     * @param length the length
+     */
+    public void append(char[] ch, int offset, int length) {
+        if (this.length + length > this.ch.length) {
+            int newLength = this.ch.length * 2 ;
+            if(newLength < this.ch.length + length + DEFAULT_SIZE){
+                newLength = this.ch.length + length + DEFAULT_SIZE;
+            }
+            char[] newch = new char[newLength];
+            System.arraycopy(this.ch, 0, newch, 0, this.length);
+            this.ch = newch;
+        }
+        //making the code more robust as it would handle null or 0 length data,
+        //add the data only when it contains some thing
+        if(ch != null && length > 0){
+            System.arraycopy(ch, offset, this.ch, this.length, length);
+            this.length += length;
+        }
+    } // append(char[],int,int)
+
+    /**
+     * Appends another buffer to this buffer
+     *
+     * @param s another buffer
+     */
+    public void append(XMLString s) {
+        append(s.ch, s.offset, s.length);
+    } // append(XMLString)
 
 } // class XMLString

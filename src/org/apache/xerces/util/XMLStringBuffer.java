@@ -44,13 +44,6 @@ public class XMLStringBuffer
     extends XMLString {
 
     //
-    // Constants
-    //
-
-    /** Default buffer size (32). */
-    public static final int DEFAULT_SIZE = 32;
-
-    //
     // Constructors
     //
 
@@ -103,74 +96,5 @@ public class XMLStringBuffer
         offset = 0;
         length = 0;
     }
-
-    /**
-     * append
-     * 
-     * @param c 
-     */
-    public void append(char c) {
-        if (this.length + 1 > this.ch.length) {
-            int newLength = this.ch.length * 2;
-            if (newLength < this.ch.length + DEFAULT_SIZE) {
-                newLength = this.ch.length + DEFAULT_SIZE;
-            }
-            char[] newch = new char[newLength];
-            System.arraycopy(this.ch, 0, newch, 0, this.length);
-            this.ch = newch;
-        }
-        this.ch[this.length] = c;
-        this.length++;
-    } // append(char)
-
-    /**
-     * append
-     * 
-     * @param s 
-     */
-    public void append(String s) {
-        int length = s.length();
-        if (this.length + length > this.ch.length) {
-            int newLength = this.ch.length * 2;
-            if (newLength < this.length + length + DEFAULT_SIZE) {
-                newLength = this.ch.length + length + DEFAULT_SIZE;
-            }
-            char[] newch = new char[newLength];            
-            System.arraycopy(this.ch, 0, newch, 0, this.length);
-            this.ch = newch;
-        }
-        s.getChars(0, length, this.ch, this.length);
-        this.length += length;
-    } // append(String)
-
-    /**
-     * append
-     * 
-     * @param ch 
-     * @param offset 
-     * @param length 
-     */
-    public void append(char[] ch, int offset, int length) {
-        if (this.length + length > this.ch.length) {
-            int newLength = this.ch.length * 2;
-            if (newLength < this.length + length + DEFAULT_SIZE) {
-                newLength = this.ch.length + length + DEFAULT_SIZE;
-            }
-            char[] newch = new char[newLength];
-            System.arraycopy(this.ch, 0, newch, 0, this.length);
-            this.ch = newch;
-        }
-        System.arraycopy(ch, offset, this.ch, this.length, length);
-        this.length += length;
-    } // append(char[],int,int)
-
-    /**
-     * append
-     * 
-     * @param s 
-     */
-    public void append(XMLString s) {
-        append(s.ch, s.offset, s.length);
-    } // append(XMLString)
 
 } // class XMLStringBuffer

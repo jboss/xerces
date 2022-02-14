@@ -948,13 +948,6 @@ public abstract class XMLScanner
                                            + fStringBuffer.toString() + "\"");
                     }
                 }
-                else if (c == '\n' || c == '\r') {
-                    fEntityScanner.scanChar();
-                    fStringBuffer.append(' ');
-                    if (entityDepth == fEntityDepth) {
-                        fStringBuffer2.append('\n');
-                    }
-                }
                 else if (c != -1 && XMLChar.isHighSurrogate(c)) {
                     fStringBuffer3.clear();
                     if (scanSurrogates(fStringBuffer3)) {
