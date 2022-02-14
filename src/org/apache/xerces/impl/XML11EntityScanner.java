@@ -694,7 +694,7 @@ public class XML11EntityScanner
                     sawIncompleteSurrogatePair)){
                     fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                "IllegalQName",
-                                               null,
+                                               new Object[]{rawname},
                                                XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
                 localpart = fSymbolTable.addSymbol(fCurrentEntity.ch,

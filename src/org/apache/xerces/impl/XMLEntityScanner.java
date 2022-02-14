@@ -596,7 +596,7 @@ public class XMLEntityScanner implements XMLLocator {
                     if (!XMLChar.isNCNameStart(fCurrentEntity.ch[startLocal])){
                         fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                                  "IllegalQName",
-                                                  null,
+                                                  new Object[]{rawname},
                                                   XMLErrorReporter.SEVERITY_FATAL_ERROR);
                     }
                     localpart = fSymbolTable.addSymbol(fCurrentEntity.ch,
