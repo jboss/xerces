@@ -1611,7 +1611,7 @@ public class XMLEntityScanner implements XMLLocator {
             do {
                 c = fCurrentEntity.ch[fCurrentEntity.position++];
                 if ((c == '\n' || c == '\r') ||
-                    (version == Constants.XML_VERSION_1_1 && (c == 0x85 || c == 0x2028))) {
+                    (version == Constants.XML_VERSION_1_1 && (c == 0x85 || c == 0x2028) && isExternal())) {
                     newlines++;
                     fCurrentEntity.lineNumber++;
                     fCurrentEntity.columnNumber = 1;
