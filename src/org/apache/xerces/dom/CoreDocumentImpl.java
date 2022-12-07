@@ -852,6 +852,9 @@ extends ParentNode implements Document  {
      * the version number of this document.
      */
     public void setXmlVersion(String value) {
+        if (value == null) {
+            return;
+        }
         if(value.equals("1.0") || value.equals("1.1")){
             //we need to change the flag value only --
             // when the version set is different than already set.

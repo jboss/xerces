@@ -533,16 +533,16 @@ public class XMLDTDScannerImpl
         if (fScannerState == SCANNER_STATE_END_OF_INPUT)
             return;
 
+        boolean dtdEntity = name.equals("[dtd]");
         // Handle end of PE
         boolean reportEntity = fReportEntity;
         if (name.startsWith("%")) {
             reportEntity = peekReportEntity();
-            // check well-formedness of the enity
+            // check well-formedness of the entity
             int startMarkUpDepth = popPEStack();
             // throw fatalError if this entity was incomplete and
             // was a freestanding decl
-            if(startMarkUpDepth == 0 &&
-                    startMarkUpDepth < fMarkUpDepth) {
+            if (startMarkUpDepth == 0 && startMarkUpDepth < fMarkUpDepth) {
                 fErrorReporter.reportError(XMLMessageFormatter.XML_DOMAIN,
                                    "ILL_FORMED_PARAMETER_ENTITY_WHEN_USED_IN_DECL",
                                    new Object[]{ fEntityManager.fCurrentEntity.name},
@@ -564,17 +564,19 @@ public class XMLDTDScannerImpl
             }
             // call handler
             if (fDTDHandler != null && reportEntity) {
-                fDTDHandler.endParameterEntity(name, augs);
+                fDTDHandler.endParameterEntity(name, null);
             }
         }
+
         // end DTD
-        else if (name.equals("[dtd]")) {
+        if (dtdEntity) {
             if (fIncludeSectDepth != 0) {
                 reportFatalError("IncludeSectUnterminated", null);
             }
             fScannerState = SCANNER_STATE_END_OF_INPUT;
             // call handler
             fEntityManager.endExternalSubset();
+
             if (fDTDHandler != null) {
                 fDTDHandler.endExternalSubset(null);
                 fDTDHandler.endDTD(null);

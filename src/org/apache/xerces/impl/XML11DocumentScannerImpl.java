@@ -316,16 +316,6 @@ public class XML11DocumentScannerImpl
                                            + fStringBuffer.toString() + "\"");
                     }
                 }
-                // note that none of these characters should ever get through
-                // XML11EntityScanner.  Not sure why
-                // this check was originally necessary.  - NG
-                else if (c == '\n' || c == '\r' || c == 0x85 || c == 0x2028) {
-                    fEntityScanner.scanChar();
-                    fStringBuffer.append(' ');
-                    if (entityDepth == fEntityDepth) {
-                        fStringBuffer2.append('\n');
-                    }
-                }
                 else if (c != -1 && XMLChar.isHighSurrogate(c)) {
                     fStringBuffer3.clear();
                     if (scanSurrogates(fStringBuffer3)) {
